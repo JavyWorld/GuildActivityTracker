@@ -3,8 +3,7 @@
 """
 Guild Activity Tracker Bridge - Versión 43.0 (THE RELAY TANK)
 Robust bridge between WoW SavedVariables (GuildActivityTrackerDB) and:
-  1) Google Sheets (Members / Activity Logs / History / M+ Score)
-  2) Website API (/api/upload) with session-based chunking
+  1) Website API (/api/upload) with session-based chunking
 
 Principios:
 - NO rompe funciones existentes: mantiene los mismos métodos públicos del V42.
@@ -15,24 +14,39 @@ Principios:
 """
 
 import os
+import sys
 import time
 import logging
 import json
 import re
 import math
 import uuid
-from dataclasses import dataclass
+import threading
+import queue
+import platform
+import importlib.util
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Tuple, Optional, Iterable
 
 import requests
 
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 from dotenv import load_dotenv
 import colorama
 from colorama import Fore
 import slpp
+
+psutil_spec = importlib.util.find_spec("psutil")
+if psutil_spec:
+    import psutil  # type: ignore
+else:
+    psutil = None  # type: ignore
+
+tk_spec = importlib.util.find_spec("tkinter")
+if tk_spec:
+    import tkinter as tk  # type: ignore
+else:
+    tk = None  # type: ignore
 
 try:
     from zoneinfo import ZoneInfo  # py3.9+
@@ -59,26 +73,104 @@ DEFAULT_STATS_BATCH_SIZE = int(os.getenv("STATS_BATCH_SIZE", "80"))
 DEFAULT_TZ = os.getenv("LOCAL_TIMEZONE", "America/New_York")
 
 STATE_FILENAME = os.getenv("BRIDGE_STATE_FILE", "gat_bridge_state.json")
+LOCAL_QUEUE_FILE = os.getenv("UPLOAD_QUEUE_FILE", "upload_queue.jsonl")
+UPLOADER_VERSION = "43.0"
 
 
 @dataclass
 class BridgeState:
     last_uploaded_stats_ts: int = 0
     last_web_session_id: str = ""
+    roster_snapshot: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
     @staticmethod
     def from_dict(d: Dict[str, Any]) -> "BridgeState":
         return BridgeState(
             last_uploaded_stats_ts=int(d.get("last_uploaded_stats_ts", 0) or 0),
             last_web_session_id=str(d.get("last_web_session_id", "") or ""),
+            roster_snapshot=d.get("roster_snapshot", {}) if isinstance(d.get("roster_snapshot", {}), dict) else {},
         )
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "last_uploaded_stats_ts": int(self.last_uploaded_stats_ts),
             "last_web_session_id": str(self.last_web_session_id or ""),
+            "roster_snapshot": self.roster_snapshot,
         }
-        return {"last_uploaded_stats_ts": int(self.last_uploaded_stats_ts)}
+
+
+class LocalUploadQueue:
+    def __init__(self, path: str):
+        self.path = path
+
+    def _ensure_dir(self):
+        base = os.path.dirname(self.path)
+        if base and not os.path.isdir(base):
+            os.makedirs(base, exist_ok=True)
+
+    def enqueue(self, payload: Dict[str, Any], purpose: str):
+        try:
+            self._ensure_dir()
+            record = {
+                "ts": int(time.time()),
+                "purpose": purpose,
+                "payload": payload,
+            }
+            with open(self.path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        except Exception as e:
+            logger.warning(f"No pude guardar en cola local: {e}")
+
+    def load_entries(self) -> List[Dict[str, Any]]:
+        entries: List[Dict[str, Any]] = []
+        if not os.path.isfile(self.path):
+            return entries
+        try:
+            with open(self.path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        entries.append(json.loads(line))
+                    except Exception:
+                        continue
+        except Exception as e:
+            logger.warning(f"No pude leer cola local: {e}")
+        return entries
+
+    def rewrite(self, entries: List[Dict[str, Any]]):
+        try:
+            self._ensure_dir()
+            tmp = self.path + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                for e in entries:
+                    f.write(json.dumps(e, ensure_ascii=False) + "\n")
+            os.replace(tmp, self.path)
+        except Exception as e:
+            logger.warning(f"No pude reescribir cola local: {e}")
+
+    def flush(self, sender):
+        entries = self.load_entries()
+        if not entries:
+            return
+        remaining: List[Dict[str, Any]] = []
+        logger.info(f"{Fore.CYAN}Procesando cola local: {len(entries)} pendientes...")
+        for entry in entries:
+            payload = entry.get("payload", {})
+            purpose = entry.get("purpose", "queued upload")
+            try:
+                sender(payload, purpose=purpose, allow_queue=False)
+            except Exception as e:
+                logger.warning(f"No pude re-subir payload en cola ({purpose}): {e}")
+                remaining.append(entry)
+        if remaining:
+            self.rewrite(remaining)
+        else:
+            try:
+                os.remove(self.path)
+            except Exception:
+                pass
 
 
 class Config:
@@ -88,24 +180,21 @@ class Config:
     def __init__(self):
         load_dotenv()
 
-        # Google
-        self.credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS', 'credentials.json')
-        self.sheet_name = os.getenv('GOOGLE_SHEET_NAME', 'Guild Activity Tracker')
-        self.worksheet_members = os.getenv('GOOGLE_SHEET_WORKSHEET', 'Members')
-        self.worksheet_stats = os.getenv('GOOGLE_SHEET_WORKSHEET_STATS', 'Activity Logs')
-        self.worksheet_dashboard = os.getenv('GOOGLE_SHEET_WORKSHEET_DASHBOARD', 'DASHBOARD')
-        self.worksheet_history = os.getenv('GOOGLE_SHEET_WORKSHEET_HISTORY', 'History')
-        self.worksheet_mythic = os.getenv('GOOGLE_SHEET_WORKSHEET_MYTHIC', 'M+ Score')
-
         # WoW SavedVariables file path (GuildActivityTracker.lua)
-        raw_path = os.getenv('WOW_ADDON_PATH', '')
-        self.wow_addon_path = os.path.normpath(os.path.expandvars(raw_path))
+        raw_path = os.getenv('WOW_ADDON_PATH', '').strip()
+        self.wow_addon_path = os.path.normpath(os.path.expandvars(raw_path)) if raw_path else ""
 
         # Realm default para normalizar nombres (si el roster viene sin "-Reino")
         self.default_realm = os.getenv("GUILD_REALM", os.getenv("DEFAULT_REALM", "")).replace(" ", "")
 
         # Loop
         self.poll_interval = int(os.getenv("POLL_INTERVAL", "5"))
+        self.wow_process_names = [
+            n.strip() for n in os.getenv(
+                "WOW_PROCESS_NAMES", "Wow.exe,Wow-64.exe,WowT.exe,WowClassic.exe"
+            ).split(",")
+            if n.strip()
+        ]
 
         # Web upload
         self.web_api_url = os.getenv("WEB_API_URL", DEFAULT_WEB_API_URL)
@@ -116,8 +205,12 @@ class Config:
 
         # Behavior toggles
         self.enable_web_upload = os.getenv("ENABLE_WEB_UPLOAD", "true").lower() == "true"
-        self.enable_sheets_sync = os.getenv("ENABLE_SHEETS_SYNC", "true").lower() == "true"
         self.enable_stats_incremental_web = os.getenv("ENABLE_STATS_INCREMENTAL_WEB", "true").lower() == "true"
+        self.enable_ui = os.getenv("ENABLE_UI", "true").lower() == "true"
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.ui_icon_path = os.path.normpath(
+            os.getenv("GAT_ICON_PATH", os.path.join(base_dir, "gat_icon.png"))
+        )
 
         # Safety: si se detecta roster muy chico, NO saltar (guild pequeña). Ajustable:
         self.min_roster_size = int(os.getenv("MIN_ROSTER_SIZE", "1"))
@@ -126,21 +219,291 @@ class Config:
 
     def _validate(self):
         if not self.wow_addon_path or self.wow_addon_path == '.':
-            raise ValueError("Error en WOW_ADDON_PATH: está vacío o inválido.")
-
-        # Credenciales: mucha gente las guarda como 'credentials' sin extensión.
-        if not os.path.isfile(self.credentials_path):
-            alt = self.credentials_path
-            if alt.lower().endswith(".json"):
-                alt = alt[:-5]  # quita .json
-            if os.path.isfile(alt):
-                self.credentials_path = alt
+            detected = self._auto_detect_wow_addon_path()
+            if detected:
+                self.wow_addon_path = detected
+                logger.info(f"{Fore.GREEN}Detectado GuildActivityTracker.lua en: {self.wow_addon_path}")
             else:
-                raise FileNotFoundError(f"Faltan credenciales de Google (GOOGLE_SHEETS_CREDENTIALS). Busqué: {self.credentials_path} y {alt}")
+                prompted = self._prompt_wow_addon_path()
+                if prompted:
+                    self.wow_addon_path = prompted
+                    logger.info(f"{Fore.GREEN}Ruta configurada manualmente: {self.wow_addon_path}")
+                else:
+                    raise ValueError("Error en WOW_ADDON_PATH: está vacío o inválido. Define la ruta en .env o como variable de entorno, o coloca GuildActivityTracker.lua en la ubicación estándar.")
 
         if not os.path.isfile(self.wow_addon_path):
             logger.warning(f"{Fore.YELLOW}AVISO: Archivo LUA no encontrado en {self.wow_addon_path}. "
                            f"El bridge quedará vigilando hasta que exista.")
+
+    def _auto_detect_wow_addon_path(self, manual_base: Optional[str] = None) -> str:
+        """
+        Busca GuildActivityTracker.lua en las rutas comunes de WoW para evitar fallar
+        cuando WOW_ADDON_PATH no está configurado. Devuelve la primera coincidencia.
+        """
+
+        candidates = []
+        home = os.path.expanduser("~")
+
+        def _add_base(base_root: str):
+            if base_root and base_root not in candidates:
+                candidates.append(base_root)
+
+        # Intentos más comunes
+        _add_base(os.path.join(home, "Documents", "World of Warcraft"))
+        _add_base(os.path.join(home, "World of Warcraft"))
+
+        if os.name == "nt":
+            userprofile = os.getenv("USERPROFILE", home)
+            _add_base(os.path.join(userprofile, "Documents", "World of Warcraft"))
+            _add_base(os.path.join(userprofile, "AppData", "Roaming", "World of Warcraft"))
+            _add_base(os.path.join(userprofile, "AppData", "Local", "World of Warcraft"))
+            program_files = os.getenv("PROGRAMFILES", os.path.join("C:\\", "Program Files"))
+            program_files_x86 = os.getenv("PROGRAMFILES(X86)", os.path.join("C:\\", "Program Files (x86)"))
+            localized_pf = [
+                os.path.join("C:\\", "Archivos de programa"),
+                os.path.join("C:\\", "Archivos de programa (x86)"),
+                os.path.join("C:\\", "Programas"),
+            ]
+
+            _add_base(os.path.join(program_files, "World of Warcraft"))
+            _add_base(os.path.join(program_files_x86, "World of Warcraft"))
+            for pf in localized_pf:
+                _add_base(os.path.join(pf, "World of Warcraft"))
+            _add_base(os.path.join("C:\\", "World of Warcraft"))
+
+        if manual_base:
+            candidates.insert(0, manual_base)
+
+        flavors = ["", "_retail_", "_classic_", "_classic_era_", "_ptr_", "_beta_"]
+
+        fallback = ""
+
+        for base in candidates:
+            for flavor in flavors:
+                wow_root = os.path.join(base, flavor) if flavor else base
+                if not os.path.isdir(wow_root):
+                    continue
+
+                # Escanear recursivamente buscando SavedVariables o el archivo objetivo.
+                for current, dirs, files in os.walk(wow_root):
+                    # Evita explorar demasiado profundo para no tardar (3 niveles extra).
+                    depth = current.replace(wow_root, "").count(os.sep)
+                    if depth > 5:
+                        dirs[:] = []
+                        continue
+
+                    if "GuildActivityTracker.lua" in files:
+                        return os.path.normpath(os.path.join(current, "GuildActivityTracker.lua"))
+
+                    if current.endswith("SavedVariables") and not fallback:
+                        fallback = os.path.normpath(os.path.join(current, "GuildActivityTracker.lua"))
+
+                # Si no encontramos nada caminando el árbol pero sí existe WTF/Account, toma la primera carpeta.
+                account_root = os.path.join(wow_root, "WTF", "Account")
+                if os.path.isdir(account_root) and not fallback:
+                    try:
+                        accounts = [a for a in os.listdir(account_root) if os.path.isdir(os.path.join(account_root, a))]
+                        if accounts:
+                            saved_vars = os.path.join(account_root, accounts[0], "SavedVariables")
+                            fallback = os.path.normpath(os.path.join(saved_vars, "GuildActivityTracker.lua"))
+                    except Exception:
+                        pass
+
+        return fallback
+
+    def _prompt_wow_addon_path(self) -> str:
+        """
+        UI simple para pedir al usuario la ruta de instalación de WoW cuando la
+        detección automática falla. Permite pegar directamente la ruta al archivo
+        GuildActivityTracker.lua o al directorio raíz del juego.
+        """
+
+        if not sys.stdin.isatty():
+            return ""
+
+        banner = "\n" + "=" * 68 + "\n" + \
+                 " Configuración interactiva - Guild Activity Bridge\n" + \
+                 " No se encontró la ruta a GuildActivityTracker.lua.\n" + \
+                 " Ayúdame indicándome dónde está instalado World of Warcraft.\n" + \
+                 "=" * 68 + "\n"
+        print(banner)
+        print("Pasos:")
+        print(" 1) Abre el explorador y copia la ruta donde está instalado el juego")
+        print(r"    (ej: C:\\Program Files (x86)\\World of Warcraft o tu carpeta personalizada).")
+        print(" 2) O pega directamente la ruta completa al archivo GuildActivityTracker.lua si ya existe.\n")
+
+        while True:
+            prompt_text = "Ruta de instalación de WoW o al archivo GuildActivityTracker.lua (enter para cancelar): "
+            user_input = input(prompt_text).strip()
+
+            if not user_input:
+                print("Configuración cancelada. Puedes definir WOW_ADDON_PATH en .env más tarde.")
+                return ""
+
+            expanded = os.path.normpath(os.path.expandvars(os.path.expanduser(user_input)))
+
+            if os.path.isfile(expanded) and expanded.lower().endswith(".lua"):
+                return expanded
+
+            if not os.path.isdir(expanded):
+                print(f"No encontré el directorio: {expanded}. Intenta de nuevo.\n")
+                continue
+
+            detected = self._auto_detect_wow_addon_path(manual_base=expanded)
+            if detected:
+                if not os.path.isfile(detected):
+                    print("No encontré GuildActivityTracker.lua todavía, pero usaré esta ruta y esperaré a que se cree:")
+                    print(f"  {detected}\n")
+                    confirm = input("¿Quieres usarla? [S/n]: ").strip().lower()
+                    if confirm in ("", "s", "si", "sí"):
+                        return detected
+                else:
+                    return detected
+
+            print("No pude localizar GuildActivityTracker.lua en la ruta indicada. Verifica e intenta nuevamente.\n")
+
+
+class BridgeUI:
+    def __init__(self, enabled: bool, icon_path: str, on_full_roster: Optional[callable] = None, on_exit: Optional[callable] = None):
+        self.enabled = enabled and tk is not None
+        self.icon_path = icon_path
+        self.on_full_roster = on_full_roster
+        self.on_exit = on_exit
+        self.root: Optional[tk.Tk] = None if tk is None else (tk.Tk() if self.enabled else None)
+        self.queue: "queue.Queue[Dict[str, str]]" = queue.Queue()
+        self.labels: Dict[str, "tk.StringVar"] = {}
+
+        if not self.enabled or self.root is None:
+            if enabled and tk is None:
+                logger.info("Interfaz gráfica no disponible (tkinter no instalado). Usando modo consola.")
+            return
+
+        self.root.title("Guild Activity Tracker Bridge")
+        self.root.configure(bg="#0f172a")
+        self.root.geometry("540x310")
+        try:
+            if os.path.isfile(self.icon_path):
+                self.root.iconphoto(False, tk.PhotoImage(file=self.icon_path))
+        except Exception:
+            pass
+
+        header = tk.Label(
+            self.root,
+            text="Guild Activity Tracker Bridge",
+            bg="#0f172a",
+            fg="#facc15",
+            font=("Segoe UI", 14, "bold"),
+            anchor="w",
+            padx=10,
+            pady=6,
+        )
+        header.pack(fill="x")
+
+        fields = [
+            ("wow", "Estado WoW"),
+            ("watch", "Archivo vigilado"),
+            ("parse", "Último parse"),
+            ("upload", "Último upload"),
+            ("latency", "Latencia"),
+            ("payload", "Tamaño payload"),
+            ("version", "Versión"),
+        ]
+
+        for key, label in fields:
+            var = tk.StringVar(value=f"{label}: ...")
+            self.labels[key] = var
+            row = tk.Label(
+                self.root,
+                textvariable=var,
+                bg="#0f172a",
+                fg="#e5e7eb",
+                anchor="w",
+                justify="left",
+                font=("Segoe UI", 10),
+                padx=10,
+                pady=2,
+            )
+            row.pack(fill="x")
+
+        controls = tk.Frame(self.root, bg="#0f172a")
+        controls.pack(fill="x", pady=8)
+        tk.Button(
+            controls,
+            text="Enviar roster completo ahora",
+            command=self._request_full,
+            bg="#1e293b",
+            fg="#e5e7eb",
+            activebackground="#334155",
+            activeforeground="#facc15",
+            relief="groove",
+            padx=8,
+            pady=4,
+        ).pack(side="left", padx=10)
+
+        footer = tk.Label(
+            self.root,
+            text="Cierra esta ventana para salir del bridge.",
+            bg="#0f172a",
+            fg="#94a3b8",
+            anchor="w",
+            padx=10,
+            pady=8,
+            font=("Segoe UI", 9, "italic"),
+        )
+        footer.pack(fill="x", side="bottom")
+
+        self.root.protocol("WM_DELETE_WINDOW", self._handle_close)
+        self.root.after(400, self._drain_queue)
+
+    def _drain_queue(self):
+        try:
+            while not self.queue.empty():
+                update = self.queue.get_nowait()
+                self._apply(update)
+        finally:
+            if self.root is not None:
+                self.root.after(500, self._drain_queue)
+
+    def _apply(self, update: Dict[str, str]):
+        for key, var in self.labels.items():
+            if key in update:
+                var.set(update[key])
+
+    def _request_full(self):
+        if self.on_full_roster:
+            try:
+                self.on_full_roster()
+            except Exception:
+                pass
+
+    def _handle_close(self):
+        if self.on_exit:
+            try:
+                self.on_exit()
+            except Exception:
+                pass
+        if self.root is not None:
+            self.root.destroy()
+
+    def run(self):
+        if not self.enabled or self.root is None:
+            return
+        self.root.mainloop()
+
+    def update(self, wow_running: bool, health: Dict[str, Any], watch_path: str):
+        if not self.enabled:
+            return
+        status = {
+            "wow": f"Estado WoW: {'Detectado' if wow_running else 'No detectado'}",
+            "watch": f"Archivo vigilado: {watch_path}",
+            "parse": f"Último parse: {health.get('last_parse_ok') or 'pendiente'}",
+            "upload": f"Último upload: {health.get('last_upload_ok') or 'pendiente'}",
+            "latency": f"Latencia: {health.get('last_latency_ms') or 's/d'} ms",
+            "payload": f"Tamaño payload: {health.get('last_payload_size') or 's/d'} bytes",
+            "version": f"Versión: {health.get('version')}",
+        }
+        if self.root is not None:
+            self.queue.put(status)
 
 
 class GuildActivityBridge:
@@ -148,21 +511,31 @@ class GuildActivityBridge:
         self.config = config
         self.lua_parser = slpp.SLPP()
         self.last_mtime = 0
+        self.health = {
+            "last_upload_ok": None,
+            "last_parse_ok": None,
+            "last_latency_ms": None,
+            "last_payload_size": None,
+            "version": UPLOADER_VERSION,
+        }
 
         self._session = requests.Session()
         self._session.headers.update({"X-API-Key": self.config.web_api_key, "Content-Type": "application/json"})
 
+        self.local_queue = LocalUploadQueue(os.path.join(os.path.dirname(os.path.abspath(__file__)), LOCAL_QUEUE_FILE))
+
         # Estado persistente (para stats incremental al Web)
         self.state_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), STATE_FILENAME)
         self.state = self._load_state()
-
-        try:
-            scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-            creds = ServiceAccountCredentials.from_json_keyfile_name(self.config.credentials_path, scope)
-            self.gc = gspread.authorize(creds)
-        except Exception as e:
-            logger.error(f"{Fore.RED}Error Login Google: {e}")
-            raise
+        self._stop_event = threading.Event()
+        self._force_full_roster = threading.Event()
+        self._force_reason = "manual"
+        self.ui = BridgeUI(
+            self.config.enable_ui,
+            self.config.ui_icon_path,
+            on_full_roster=lambda: self.request_full_roster("manual-ui"),
+            on_exit=self.stop,
+        )
 
 
     # =========================
@@ -192,28 +565,99 @@ class GuildActivityBridge:
         # Un session ID consistente por ciclo de /reload (unifica stats + roster)
         return f"{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:6]}"
 
+    def _is_wow_running(self) -> bool:
+        if psutil is None:
+            return True
+
+        targets = {p.lower(): True for p in self.config.wow_process_names}
+        for proc in psutil.process_iter(["name"]):
+            name = (proc.info.get("name") or "").lower()
+            if name in targets:
+                return True
+        return False
+
+    def request_full_roster(self, reason: str = "manual"):
+        self._force_reason = reason
+        self._force_full_roster.set()
+        logger.info(f"{Fore.CYAN}Se solicitó envío completo del roster (motivo: {reason}). Se ejecutará en el próximo ciclo.")
+
+    def stop(self):
+        self._stop_event.set()
+
     # =========================
     # Loop principal
     # =========================
     def start(self):
         logger.info(f"{Fore.GREEN}=== SISTEMA V43.0 (THE RELAY TANK) ===")
         logger.info(f"Vigilando: {self.config.wow_addon_path}")
+        self._check_latest_version()
+        self._start_command_listener()
 
-        while True:
+        if self.ui.enabled and self.ui.root is not None:
+            worker = threading.Thread(target=self._run_loop, daemon=True)
+            worker.start()
+            self.ui.run()
+            self.stop()
+        else:
+            self._run_loop()
+
+    def _start_command_listener(self):
+        if not sys.stdin.isatty():
+            return
+
+        def _listen():
+            while not self._stop_event.is_set():
+                try:
+                    line = input().strip().lower()
+                except EOFError:
+                    break
+                except Exception:
+                    break
+
+                if line in ("full", "f", "full roster", "roster full"):
+                    self.request_full_roster("manual-cli")
+
+        threading.Thread(target=_listen, daemon=True).start()
+
+    def _run_loop(self):
+        last_wow_state: Optional[bool] = None
+
+        while not self._stop_event.is_set():
             try:
+                wow_running = self._is_wow_running()
+                if wow_running != last_wow_state:
+                    if wow_running:
+                        logger.info("World of Warcraft detectado. Activando monitoreo y cola local.")
+                        self.local_queue.flush(self._post_to_web_with_retry)
+                        self.last_mtime = 0
+                    else:
+                        logger.info("World of Warcraft no está en ejecución. Esperando...")
+                last_wow_state = wow_running
+
+                if not wow_running:
+                    self.ui.update(False, self.health, self.config.wow_addon_path)
+                    time.sleep(self.config.poll_interval)
+                    continue
+
                 if os.path.isfile(self.config.wow_addon_path):
                     current_mtime = os.path.getmtime(self.config.wow_addon_path)
-                    if self.last_mtime == 0:
+                    needs_process = False
+                    if self.last_mtime == 0 or current_mtime != self.last_mtime:
+                        needs_process = True
+                    elif self._force_full_roster.is_set():
+                        needs_process = True
+
+                    if needs_process:
+                        if current_mtime != self.last_mtime and self.last_mtime != 0:
+                            logger.info(f"{Fore.CYAN}¡Cambio detectado! Esperando estabilización de archivo...")
+                            self._wait_for_file_stable(self.config.wow_addon_path)
                         self.last_mtime = current_mtime
                         self.process_file()
-                    elif current_mtime != self.last_mtime:
-                        logger.info(f"{Fore.CYAN}¡Cambio detectado! Esperando estabilización de archivo...")
-                        self._wait_for_file_stable(self.config.wow_addon_path)
-                        self.last_mtime = current_mtime
-                        self.process_file()
+                self.ui.update(True, self.health, self.config.wow_addon_path)
                 time.sleep(self.config.poll_interval)
             except KeyboardInterrupt:
                 logger.info("Cerrando bridge por KeyboardInterrupt.")
+                self.stop()
                 break
             except Exception as e:
                 logger.error(f"Error ciclo: {e}", exc_info=True)
@@ -241,13 +685,46 @@ class GuildActivityBridge:
             time.sleep(delay)
         # Si no estabiliza rápido, igual continuamos: /reload suele terminar pronto.
 
+    def _check_latest_version(self):
+        try:
+            base = self.config.web_api_url.rsplit("/api", 1)[0]
+            url = f"{base}/api/uploader/latest"
+            resp = self._session.get(url, timeout=10)
+            if resp.status_code != 200:
+                return
+            data = resp.json()
+            latest = str(data.get("version") or data.get("latest") or "")
+            if latest and latest != UPLOADER_VERSION:
+                logger.warning(f"{Fore.YELLOW}Nueva versión disponible: {latest}. Estás en {UPLOADER_VERSION}.")
+            else:
+                logger.info(f"{Fore.GREEN}Uploader actualizado ({UPLOADER_VERSION}).")
+        except Exception as e:
+            logger.info(f"No se pudo verificar versión más reciente: {e}")
+
+    def _consume_force_full_flag(self) -> Tuple[bool, str]:
+        if self._force_full_roster.is_set():
+            self._force_full_roster.clear()
+            return True, self._force_reason
+        return False, ""
+
+    def _print_health_panel(self):
+        panel = [
+            "=== HEALTH PANEL ===",
+            f"Último parse OK: {self.health.get('last_parse_ok') or 'pendiente'}",
+            f"Último upload OK: {self.health.get('last_upload_ok') or 'pendiente'}",
+            f"Latencia al server: {self.health.get('last_latency_ms') or 's/d'} ms",
+            f"Tamaño payload: {self.health.get('last_payload_size') or 's/d'} bytes",
+            f"Versión: {self.health.get('version')}",
+        ]
+        logger.info(" | ".join(panel))
+        self.ui.update(self._is_wow_running(), self.health, self.config.wow_addon_path)
+
     # =========================
     # Procesamiento principal
     # =========================
     def process_file(self):
         """
         Lee SavedVariables, unifica datos y sincroniza:
-          - Google Sheets
           - Web API (stats incremental + roster/chat por lotes)
         """
         try:
@@ -272,6 +749,8 @@ class GuildActivityBridge:
                 logger.error("El contenido LUA no decodificó a un diccionario.")
                 return
 
+            self.health["last_parse_ok"] = datetime.now().isoformat()
+
             # =================================================================
             # PASO 1: PROCESAMIENTO UNIFICADO DE DATOS
             # =================================================================
@@ -281,24 +760,11 @@ class GuildActivityBridge:
                 return
 
             # =================================================================
-            # PASO 2: GOOGLE SHEETS
             # =================================================================
-            if self.config.enable_sheets_sync:
-                self._ensure_sheets_exist()
-                self._sync_members_to_sheet(processed_data['members'])
-                if processed_data.get('stats'):
-                    self._sync_stats_to_sheet(processed_data['stats'])
-                if processed_data.get('mythic'):
-                    self._sync_mythic_scores(processed_data['mythic'])
-
-                total_msgs = sum(int(m.get('total', 0) or 0) for m in processed_data['members'].values())
-                self._update_history_log(active_count, total_msgs)
-                self._update_dashboard()
-
-            # =================================================================
-            # PASO 3: WEB UPLOAD
+            # PASO 2: WEB UPLOAD
             # =================================================================
             if self.config.enable_web_upload:
+                                self.local_queue.flush(self._post_to_web_with_retry)
                                 # Un solo Session ID para TODO en este ciclo (stats + roster/chat)
                                 web_session_id = self._make_upload_session_id()
                                 self.state.last_web_session_id = web_session_id
@@ -309,11 +775,13 @@ class GuildActivityBridge:
                                     self._upload_stats_incremental_to_web(processed_data["stats"], web_session_id)
 
                                 # 3B) Roster + chat por sesión en lotes (evita 413)
-                                self._upload_chunked_to_web(processed_data, web_session_id)
+                                self._upload_chunked_to_web(processed_data, web_session_id, *self._consume_force_full_flag())
 
 
         except Exception as e:
             logger.error(f"Error procesando archivo: {e}", exc_info=True)
+        finally:
+            self._print_health_panel()
 
     # =========================
     # LUA parsing helpers
@@ -382,6 +850,40 @@ class GuildActivityBridge:
 
     def _short_name(self, full: str) -> str:
         return (full or "").split("-", 1)[0]
+
+    def _build_roster_snapshot(self, roster_members: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+        snapshot: Dict[str, Dict[str, Any]] = {}
+        for name, info in roster_members.items():
+            if not isinstance(info, dict):
+                continue
+            snapshot[name] = {
+                "rank": info.get("rank", "Member"),
+                "lvl": int(info.get("level", 0) or 0),
+                "class": info.get("class", "UNKNOWN"),
+                "lastSeenTS": int(info.get("lastSeenTS", 0) or 0),
+                "lastMessage": info.get("lastMessage", ""),
+            }
+        return snapshot
+
+    def _compute_roster_delta(self, roster_members: Dict[str, Any]):
+        prev = self.state.roster_snapshot or {}
+        current_snapshot = self._build_roster_snapshot(roster_members)
+
+        added: Dict[str, Dict[str, Any]] = {}
+        updated: Dict[str, Dict[str, Any]] = {}
+        removed: List[str] = []
+
+        for name, info in current_snapshot.items():
+            if name not in prev:
+                added[name] = roster_members.get(name, info)
+            elif info != prev.get(name, {}):
+                updated[name] = roster_members.get(name, info)
+
+        for name in prev.keys():
+            if name not in current_snapshot:
+                removed.append(name)
+
+        return added, updated, removed
 
     def _find_chat_entry_for_roster_member(
         self,
@@ -724,311 +1226,6 @@ class GuildActivityBridge:
         return out
 
     # =========================
-    # GOOGLE SHEETS
-    # =========================
-    def _ensure_sheets_exist(self):
-        try:
-            sh = self.gc.open(self.config.sheet_name)
-
-            # Members, Stats, History
-            for w in [self.config.worksheet_members, self.config.worksheet_stats, self.config.worksheet_history]:
-                try:
-                    sh.worksheet(w)
-                except Exception:
-                    sh.add_worksheet(w, 2000, 10)
-
-            # Mythic
-            try:
-                sh.worksheet(self.config.worksheet_mythic)
-            except Exception:
-                ws = sh.add_worksheet(self.config.worksheet_mythic, 1000, 5)
-                ws.append_row(["Jugador", "Clase", "Spec", "Score", "Update"])
-
-            # Crear header Members si está vacío
-            try:
-                ws = sh.worksheet(self.config.worksheet_members)
-                vals = ws.get_all_values()
-                if not vals:
-                    ws.append_row(["Member", "Rank", "RankIndex", "Total", "MsgsToday", "LastSeen", "LastSeenTS", "LastMessage", "Reserved1", "Reserved2"])
-            except Exception:
-                pass
-
-        except Exception as e:
-            logger.error(f"Error _ensure_sheets_exist: {e}")
-
-    def _sync_members_to_sheet(self, members_data: Dict):
-        """
-        Mantiene la lógica V42 pero:
-          - usa rankIndex real (si viene del chat)
-          - renombra filas huérfanas (Nombre -> Nombre-Reino) cuando es seguro
-          - reduce updates: solo cambia si difiere
-        """
-        try:
-            sh = self.gc.open(self.config.sheet_name)
-            ws = sh.worksheet(self.config.worksheet_members)
-
-            vals = ws.get_all_values()
-            if not vals:
-                # header mínimo
-                ws.append_row(["Member", "Rank", "RankIndex", "Total", "MsgsToday", "LastSeen", "LastSeenTS", "LastMessage", "Reserved1", "Reserved2"])
-                vals = ws.get_all_values()
-
-            # mapa de filas existentes
-            header = vals[0] if vals else []
-            rows = vals[1:] if len(vals) > 1 else []
-
-            # Determinar default realm (mismo que usamos en merge)
-            default_realm = ""
-            try:
-                # si tenemos meta en members_data: no.
-                # Lo inferimos del set de keys:
-                realms = {}
-                for k in members_data.keys():
-                    ks = str(k)
-                    if "-" in ks:
-                        r = ks.split("-", 1)[1]
-                        realms[r] = realms.get(r, 0) + 1
-                if realms:
-                    default_realm = sorted(realms.items(), key=lambda x: (-x[1], x[0]))[0][0]
-            except Exception:
-                pass
-
-            # Map canonical -> rowIndex (2-based)
-            canonical_to_row: Dict[str, int] = {}
-            exact_to_row: Dict[str, int] = {}
-            ambiguous_canonical: set = set()
-
-            for i, r in enumerate(rows):
-                if not r:
-                    continue
-                name_cell = (r[0] if len(r) > 0 else "").strip()
-                if not name_cell:
-                    continue
-                row_idx = i + 2
-                exact_to_row[name_cell] = row_idx
-
-                ck = name_cell
-                if "-" not in ck and default_realm:
-                    ck = f"{ck}-{default_realm}"
-
-                if ck in canonical_to_row:
-                    ambiguous_canonical.add(ck)
-                else:
-                    canonical_to_row[ck] = row_idx
-
-            # Buscar siguiente fila vacía
-            next_row = len(vals) + 1
-
-            updates: List[Dict[str, Any]] = []
-            today_str = datetime.now().strftime("%Y-%m-%d")
-
-            def safe_cell_str(s: Any, limit: int = 2000) -> str:
-                txt = "" if s is None else str(s)
-                if len(txt) > limit:
-                    return txt[:limit]
-                return txt
-
-            # Para comparar cambios, preparamos una cache de valores actuales por row.
-            # Row array: A..J
-            current_by_row: Dict[int, List[str]] = {}
-            for i, r in enumerate(rows):
-                current_by_row[i + 2] = r + [""] * max(0, 10 - len(r))
-
-            # Orden estable por nombre
-            for name in sorted(members_data.keys(), key=lambda x: str(x).lower()):
-                info = members_data[name] if isinstance(members_data[name], dict) else {}
-                canonical_name = str(name)
-
-                msgs_today = 0
-                daily = info.get('daily', {})
-                if isinstance(daily, dict):
-                    try:
-                        msgs_today = int(daily.get(today_str, 0) or 0)
-                    except Exception:
-                        msgs_today = 0
-
-                rank_name = safe_cell_str(info.get('rank', '-') or '-')
-                rank_index = int(info.get('rankIndex', 99) or 99)
-                total = int(info.get('total', 0) or 0)
-                last_seen = safe_cell_str(info.get('lastSeen', '') or '')
-                last_seen_ts = int(info.get('lastSeenTS', 0) or 0)
-                last_msg = safe_cell_str(info.get('lastMessage', '') or '')
-
-                row_data = [rank_name, str(rank_index), str(total), str(msgs_today), last_seen, str(last_seen_ts), last_msg]
-
-                # decidir fila: exact o canonical
-                target_row: Optional[int] = None
-                if canonical_name in exact_to_row:
-                    target_row = exact_to_row[canonical_name]
-                else:
-                    if canonical_name in canonical_to_row and canonical_name not in ambiguous_canonical:
-                        target_row = canonical_to_row[canonical_name]
-
-                if target_row is not None:
-                    # Renombrar A si la fila tenía nombre corto y el canonical tiene reino
-                    current_row = current_by_row.get(target_row, [""] * 10)
-                    current_name = (current_row[0] or "").strip()
-                    # Si el row actual es corto y canonical tiene "-" -> renombrar A
-                    if current_name and "-" not in current_name and "-" in canonical_name:
-                        updates.append({
-                            'range': f"A{target_row}:A{target_row}",
-                            'values': [[canonical_name]]
-                        })
-
-                    # Solo update si cambió algo
-                    current_slice = current_row[1:8]  # B..H
-                    if [str(x) for x in row_data] != [str(x) for x in current_slice]:
-                        updates.append({
-                            'range': f"B{target_row}:H{target_row}",
-                            'values': [row_data]
-                        })
-                else:
-                    # insertar nuevo
-                    updates.append({
-                        'range': f"A{next_row}:J{next_row}",
-                        'values': [[canonical_name] + row_data + ["", ""]]
-                    })
-                    next_row += 1
-
-            # Ejecutar batch_update en chunks (Google a veces limita payload)
-            if updates:
-                chunk_size = 400
-                for i in range(0, len(updates), chunk_size):
-                    ws.batch_update(updates[i:i + chunk_size])
-                logger.info(f"{Fore.GREEN}Sheet Members actualizado ({len(updates)} cambios).")
-
-            ws.update_acell('J1', f'Update: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
-
-        except Exception as e:
-            logger.error(f"Error Sync Sheet Members: {e}", exc_info=True)
-
-    def _sync_stats_to_sheet(self, stats_source: Any):
-        """
-        Acepta stats normalizadas (lista) o legacy.
-        Inserta filas nuevas en "Activity Logs" con A=ts.
-        """
-        try:
-            sh = self.gc.open(self.config.sheet_name)
-            ws = sh.worksheet(self.config.worksheet_stats)
-
-            vals = ws.get_all_values()
-            if not vals:
-                ws.append_row(["Timestamp", "Date", "Time", "Day", "OnlineCount", "HourBucket"])
-                vals = ws.get_all_values()
-
-            exist = {r[0] for i, r in enumerate(vals) if i > 0 and r and len(r) > 0}
-
-            # Convertimos a iterable de (ts, count)
-            rows_to_add: List[List[Any]] = []
-
-            tz = None
-            try:
-                if ZoneInfo:
-                    tz = ZoneInfo(DEFAULT_TZ)
-            except Exception:
-                tz = None
-
-            def add_row(ts: int, count: int):
-                dt = datetime.fromtimestamp(ts, tz=tz) if tz else datetime.fromtimestamp(ts)
-                rows_to_add.append([
-                    str(ts),
-                    dt.strftime("%Y-%m-%d"),
-                    dt.strftime("%H:%M"),
-                    dt.strftime("%A"),
-                    int(count),
-                    dt.strftime("%H:00")
-                ])
-
-            if isinstance(stats_source, dict):
-                for k, v in sorted(stats_source.items(), key=lambda x: int(x[0]) if str(x[0]).isdigit() else 0):
-                    try:
-                        ts = int(k)
-                        if str(ts) not in exist:
-                            add_row(ts, int(v or 0))
-                    except Exception:
-                        pass
-            elif isinstance(stats_source, list):
-                for snap in stats_source:
-                    if not isinstance(snap, dict):
-                        continue
-                    try:
-                        ts = int(snap.get("ts", 0) or 0)
-                        if not ts:
-                            continue
-                        if str(ts) in exist:
-                            continue
-                        count = int(snap.get("onlineCount", 0) or 0)
-                        add_row(ts, count)
-                    except Exception:
-                        pass
-
-            if rows_to_add:
-                # Append en chunks
-                chunk = 400
-                for i in range(0, len(rows_to_add), chunk):
-                    ws.append_rows(rows_to_add[i:i + chunk], value_input_option="USER_ENTERED")
-                logger.info(f"{Fore.GREEN}Activity Logs: {len(rows_to_add)} snapshots añadidos.")
-
-        except Exception as e:
-            logger.error(f"Error Sync Sheet Stats: {e}", exc_info=True)
-
-    def _sync_mythic_scores(self, d):
-        """
-        Mantiene función V42.
-        """
-        try:
-            if not isinstance(d, dict):
-                return
-            sh = self.gc.open(self.config.sheet_name)
-            ws = sh.worksheet(self.config.worksheet_mythic)
-            vals = ws.get_all_values()
-            exist = {r[0]: {'r': i + 1, 's': float(r[3]) if len(r) > 3 and r[3] else 0}
-                     for i, r in enumerate(vals) if i > 0 and r}
-
-            nxt = len(vals) + 1
-            upd = []
-
-            for n, v in d.items():
-                if not isinstance(v, dict):
-                    continue
-                try:
-                    sc = float(v.get('score', 0) or 0)
-                except Exception:
-                    sc = 0
-                if sc <= 0:
-                    continue
-
-                if n in exist:
-                    if sc > exist[n]['s']:
-                        upd.append({'range': f"B{exist[n]['r']}:E{exist[n]['r']}",
-                                    'values': [[v.get('class', '?'), v.get('spec', '?'), sc,
-                                                datetime.now().strftime("%Y-%m-%d %H:%M")]]})
-                else:
-                    upd.append({'range': f"A{nxt}:E{nxt}",
-                                'values': [[n, v.get('class', '?'), v.get('spec', '?'), sc,
-                                            datetime.now().strftime("%Y-%m-%d %H:%M")]]})
-                    nxt += 1
-
-            if upd:
-                for i in range(0, len(upd), 400):
-                    ws.batch_update(upd[i:i + 400])
-        except Exception:
-            pass
-
-    def _update_history_log(self, a, m):
-        try:
-            self.gc.open(self.config.sheet_name).worksheet(self.config.worksheet_history).append_row(
-                [datetime.now().strftime("%Y-%m-%d"), datetime.now().strftime("%H:%M:%S"), int(a), int(m)]
-            )
-        except Exception:
-            pass
-
-    def _update_dashboard(self):
-        # Manteniendo compatibilidad: si tu dashboard se calcula con fórmulas en Sheets,
-        # este método puede quedarse vacío.
-        pass
-
-    # =========================
     # WEB UPLOADER (Robusto)
     # =========================
     def _upload_stats_incremental_to_web(self, stats_list: List[Dict[str, Any]], upload_session_id: str):
@@ -1081,7 +1278,7 @@ class GuildActivityBridge:
             logger.error(f"{Fore.RED}Error stats incremental web: {e}", exc_info=True)
             # NO abortamos el resto; roster/chat se puede subir igual.
 
-    def _upload_chunked_to_web(self, processed_data: Dict, upload_session_id: str):
+    def _upload_chunked_to_web(self, processed_data: Dict, upload_session_id: str, force_full: bool = False, force_reason: str = ""):
         """
         Mantiene el nombre del método del V42, pero:
           - usa snake_case que el backend espera, y también camelCase por compat
@@ -1094,6 +1291,55 @@ class GuildActivityBridge:
         roster_members = processed_data.get("roster_members") or processed_data.get("members") or {}
         if not isinstance(roster_members, dict) or not roster_members:
             logger.warning("No roster_members para subir a Web.")
+            return
+
+        added, updated, removed = self._compute_roster_delta(roster_members)
+        roster_mode = "delta"
+        if force_full:
+            roster_members = roster_members
+            roster_mode = "full"
+            logger.info(f"{Fore.CYAN}Envío completo de roster solicitado ({force_reason or 'manual'}). {len(roster_members)} miembros se enviarán en pleno.")
+        elif added or updated or removed:
+            roster_members = {**added, **updated}
+            logger.info(f"{Fore.CYAN}Delta roster -> added: {len(added)}, updated: {len(updated)}, removed: {len(removed)}")
+        else:
+            roster_mode = "no_change"
+            summary_payload = {
+                "upload_session_id": upload_session_id,
+                "is_final_batch": True,
+                "batch_index": 1,
+                "total_batches": 1,
+                "removed_members": [],
+                "uploadSessionId": upload_session_id,
+                "isFinalBatch": True,
+                "batchIndex": 1,
+                "totalBatches": 1,
+                "removedMembers": [],
+                "master_roster": {},
+                "data": {},
+                "roster_mode": roster_mode,
+                "roster_summary": {
+                    "mode": roster_mode,
+                    "added": 0,
+                    "updated": 0,
+                    "removed": 0,
+                    "total_members": len(roster_members),
+                    "reason": "sin cambios desde último snapshot",
+                },
+                "rosterMode": roster_mode,
+                "rosterSummary": {
+                    "mode": roster_mode,
+                    "added": 0,
+                    "updated": 0,
+                    "removed": 0,
+                    "totalMembers": len(roster_members),
+                    "reason": "sin cambios desde último snapshot",
+                },
+            }
+            self._post_to_web_with_retry(summary_payload, purpose="roster no-change heartbeat")
+            self.state.roster_snapshot = self._build_roster_snapshot(processed_data.get("roster_members") or processed_data.get("members") or {})
+            self._save_state()
+            logger.info(f"{Fore.CYAN}No hay cambios en roster/chat. Se envió heartbeat de estado al sitio.")
             return
 
         all_keys = list(roster_members.keys())
@@ -1138,23 +1384,43 @@ class GuildActivityBridge:
                         "lastSeen": last_seen_iso,
                     }
 
-            payload = {
-                # snake_case (backend)
-                "upload_session_id": session_id,
-                "is_final_batch": bool(is_final),
-                "batch_index": int(batch_index),
-                "total_batches": int(total_batches),
+                payload = {
+                    # snake_case (backend)
+                    "upload_session_id": session_id,
+                    "is_final_batch": bool(is_final),
+                    "batch_index": int(batch_index),
+                    "total_batches": int(total_batches),
+                    "removed_members": removed if is_final and roster_mode in ("delta", "full") else [],
+                    "roster_mode": roster_mode,
+                    "roster_summary": {
+                        "mode": roster_mode,
+                        "added": len(added) if roster_mode in ("delta", "full") else 0,
+                        "updated": len(updated) if roster_mode in ("delta", "full") else 0,
+                        "removed": len(removed) if roster_mode in ("delta", "full") else 0,
+                        "total_members": len(processed_data.get("roster_members") or processed_data.get("members") or {}),
+                        "reason": force_reason if roster_mode == "full" else "delta",
+                    },
 
-                # camelCase (por si tu backend viejo lo usaba)
-                "uploadSessionId": session_id,
-                "isFinalBatch": bool(is_final),
-                "batchIndex": int(batch_index),
-                "totalBatches": int(total_batches),
+                    # camelCase (por si tu backend viejo lo usaba)
+                    "uploadSessionId": session_id,
+                    "isFinalBatch": bool(is_final),
+                    "batchIndex": int(batch_index),
+                    "totalBatches": int(total_batches),
+                    "removedMembers": removed if is_final and roster_mode in ("delta", "full") else [],
+                    "rosterMode": roster_mode,
+                    "rosterSummary": {
+                        "mode": roster_mode,
+                        "added": len(added) if roster_mode in ("delta", "full") else 0,
+                        "updated": len(updated) if roster_mode in ("delta", "full") else 0,
+                        "removed": len(removed) if roster_mode in ("delta", "full") else 0,
+                        "totalMembers": len(processed_data.get("roster_members") or processed_data.get("members") or {}),
+                        "reason": force_reason if roster_mode == "full" else "delta",
+                    },
 
-                "master_roster": master_roster,
-                "data": chat_data,
-                # stats NO aquí (se sube separado / incremental)
-            }
+                    "master_roster": master_roster,
+                    "data": chat_data,
+                    # stats NO aquí (se sube separado / incremental)
+                }
             return payload
 
         # Upload loop con auto-ajuste 413
@@ -1184,12 +1450,14 @@ class GuildActivityBridge:
                 # NO avanzamos idx; reintentamos mismo lote con batch más chico.
                 time.sleep(1.0)
 
+        self.state.roster_snapshot = self._build_roster_snapshot(processed_data.get("roster_members") or processed_data.get("members") or {})
+        self._save_state()
         logger.info(f"{Fore.GREEN}✔✔ Upload Web Roster/Chat Completado Exitosamente (session {session_id}).")
 
     # -------------------------
     # HTTP helper
     # -------------------------
-    def _post_to_web_with_retry(self, payload: Dict[str, Any], purpose: str = ""):
+    def _post_to_web_with_retry(self, payload: Dict[str, Any], purpose: str = "", allow_queue: bool = True):
         """
         Reintentos fuertes (no abandona fácil).
         Lanza _TooLarge413 si 413 (para que el caller ajuste batch size).
@@ -1200,13 +1468,19 @@ class GuildActivityBridge:
         backoff = 1.0
         max_backoff = 20.0
         attempt = 0
+        max_attempts_before_queue = 5
 
         while True:
             attempt += 1
             try:
+                start = time.time()
                 resp = self._session.post(url, json=payload, headers=headers, timeout=self.config.http_timeout)
+                elapsed_ms = int((time.time() - start) * 1000)
+                self.health["last_latency_ms"] = elapsed_ms
+                self.health["last_payload_size"] = len(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
 
                 if resp.status_code == 200:
+                    self.health["last_upload_ok"] = datetime.now().isoformat()
                     return
 
                 if resp.status_code == 413:
@@ -1228,6 +1502,10 @@ class GuildActivityBridge:
 
                 # 429/5xx/etc: reintentar
                 logger.warning(f"{Fore.YELLOW}Web error {resp.status_code} en {purpose}. Intento {attempt}. Backoff {backoff:.1f}s")
+                if allow_queue and attempt >= max_attempts_before_queue:
+                    self.local_queue.enqueue(payload, purpose)
+                    logger.warning(f"{Fore.MAGENTA}Persisten errores de server ({resp.status_code}). Payload en cola local.")
+                    return
                 time.sleep(backoff)
                 backoff = min(max_backoff, backoff * 1.6)
                 continue
@@ -1236,6 +1514,10 @@ class GuildActivityBridge:
                 raise
             except requests.RequestException as e:
                 logger.warning(f"{Fore.YELLOW}Web conexión falló en {purpose}: {e}. Intento {attempt}. Backoff {backoff:.1f}s")
+                if allow_queue and attempt >= max_attempts_before_queue:
+                    self.local_queue.enqueue(payload, purpose)
+                    logger.warning(f"{Fore.MAGENTA}No hay conexión estable ({purpose}). Payload guardado en cola local para reintento.")
+                    return
                 time.sleep(backoff)
                 backoff = min(max_backoff, backoff * 1.6)
                 continue
