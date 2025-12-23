@@ -364,9 +364,11 @@ class Config:
 
 
 class BridgeUI:
-    def __init__(self, enabled: bool, icon_path: str):
+    def __init__(self, enabled: bool, icon_path: str, on_full_roster: Optional[callable] = None, on_exit: Optional[callable] = None):
         self.enabled = enabled and tk is not None
         self.icon_path = icon_path
+        self.on_full_roster = on_full_roster
+        self.on_exit = on_exit
         self.root: Optional[tk.Tk] = None if tk is None else (tk.Tk() if self.enabled else None)
         self.queue: "queue.Queue[Dict[str, str]]" = queue.Queue()
         self.labels: Dict[str, "tk.StringVar"] = {}
@@ -378,7 +380,7 @@ class BridgeUI:
 
         self.root.title("Guild Activity Tracker Bridge")
         self.root.configure(bg="#0f172a")
-        self.root.geometry("520x260")
+        self.root.geometry("540x310")
         try:
             if os.path.isfile(self.icon_path):
                 self.root.iconphoto(False, tk.PhotoImage(file=self.icon_path))
@@ -423,6 +425,21 @@ class BridgeUI:
             )
             row.pack(fill="x")
 
+        controls = tk.Frame(self.root, bg="#0f172a")
+        controls.pack(fill="x", pady=8)
+        tk.Button(
+            controls,
+            text="Enviar roster completo ahora",
+            command=self._request_full,
+            bg="#1e293b",
+            fg="#e5e7eb",
+            activebackground="#334155",
+            activeforeground="#facc15",
+            relief="groove",
+            padx=8,
+            pady=4,
+        ).pack(side="left", padx=10)
+
         footer = tk.Label(
             self.root,
             text="Cierra esta ventana para salir del bridge.",
@@ -435,7 +452,7 @@ class BridgeUI:
         )
         footer.pack(fill="x", side="bottom")
 
-        self.root.protocol("WM_DELETE_WINDOW", self.root.quit)
+        self.root.protocol("WM_DELETE_WINDOW", self._handle_close)
         self.root.after(400, self._drain_queue)
 
     def _drain_queue(self):
@@ -452,10 +469,26 @@ class BridgeUI:
             if key in update:
                 var.set(update[key])
 
-    def start(self):
+    def _request_full(self):
+        if self.on_full_roster:
+            try:
+                self.on_full_roster()
+            except Exception:
+                pass
+
+    def _handle_close(self):
+        if self.on_exit:
+            try:
+                self.on_exit()
+            except Exception:
+                pass
+        if self.root is not None:
+            self.root.destroy()
+
+    def run(self):
         if not self.enabled or self.root is None:
             return
-        threading.Thread(target=self.root.mainloop, daemon=True).start()
+        self.root.mainloop()
 
     def update(self, wow_running: bool, health: Dict[str, Any], watch_path: str):
         if not self.enabled:
@@ -494,7 +527,15 @@ class GuildActivityBridge:
         # Estado persistente (para stats incremental al Web)
         self.state_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), STATE_FILENAME)
         self.state = self._load_state()
-        self.ui = BridgeUI(self.config.enable_ui, self.config.ui_icon_path)
+        self._stop_event = threading.Event()
+        self._force_full_roster = threading.Event()
+        self._force_reason = "manual"
+        self.ui = BridgeUI(
+            self.config.enable_ui,
+            self.config.ui_icon_path,
+            on_full_roster=lambda: self.request_full_roster("manual-ui"),
+            on_exit=self.stop,
+        )
 
 
     # =========================
@@ -535,6 +576,14 @@ class GuildActivityBridge:
                 return True
         return False
 
+    def request_full_roster(self, reason: str = "manual"):
+        self._force_reason = reason
+        self._force_full_roster.set()
+        logger.info(f"{Fore.CYAN}Se solicitó envío completo del roster (motivo: {reason}). Se ejecutará en el próximo ciclo.")
+
+    def stop(self):
+        self._stop_event.set()
+
     # =========================
     # Loop principal
     # =========================
@@ -542,11 +591,38 @@ class GuildActivityBridge:
         logger.info(f"{Fore.GREEN}=== SISTEMA V43.0 (THE RELAY TANK) ===")
         logger.info(f"Vigilando: {self.config.wow_addon_path}")
         self._check_latest_version()
-        self.ui.start()
+        self._start_command_listener()
 
+        if self.ui.enabled and self.ui.root is not None:
+            worker = threading.Thread(target=self._run_loop, daemon=True)
+            worker.start()
+            self.ui.run()
+            self.stop()
+        else:
+            self._run_loop()
+
+    def _start_command_listener(self):
+        if not sys.stdin.isatty():
+            return
+
+        def _listen():
+            while not self._stop_event.is_set():
+                try:
+                    line = input().strip().lower()
+                except EOFError:
+                    break
+                except Exception:
+                    break
+
+                if line in ("full", "f", "full roster", "roster full"):
+                    self.request_full_roster("manual-cli")
+
+        threading.Thread(target=_listen, daemon=True).start()
+
+    def _run_loop(self):
         last_wow_state: Optional[bool] = None
 
-        while True:
+        while not self._stop_event.is_set():
             try:
                 wow_running = self._is_wow_running()
                 if wow_running != last_wow_state:
@@ -565,18 +641,23 @@ class GuildActivityBridge:
 
                 if os.path.isfile(self.config.wow_addon_path):
                     current_mtime = os.path.getmtime(self.config.wow_addon_path)
-                    if self.last_mtime == 0:
-                        self.last_mtime = current_mtime
-                        self.process_file()
-                    elif current_mtime != self.last_mtime:
-                        logger.info(f"{Fore.CYAN}¡Cambio detectado! Esperando estabilización de archivo...")
-                        self._wait_for_file_stable(self.config.wow_addon_path)
+                    needs_process = False
+                    if self.last_mtime == 0 or current_mtime != self.last_mtime:
+                        needs_process = True
+                    elif self._force_full_roster.is_set():
+                        needs_process = True
+
+                    if needs_process:
+                        if current_mtime != self.last_mtime and self.last_mtime != 0:
+                            logger.info(f"{Fore.CYAN}¡Cambio detectado! Esperando estabilización de archivo...")
+                            self._wait_for_file_stable(self.config.wow_addon_path)
                         self.last_mtime = current_mtime
                         self.process_file()
                 self.ui.update(True, self.health, self.config.wow_addon_path)
                 time.sleep(self.config.poll_interval)
             except KeyboardInterrupt:
                 logger.info("Cerrando bridge por KeyboardInterrupt.")
+                self.stop()
                 break
             except Exception as e:
                 logger.error(f"Error ciclo: {e}", exc_info=True)
@@ -619,6 +700,12 @@ class GuildActivityBridge:
                 logger.info(f"{Fore.GREEN}Uploader actualizado ({UPLOADER_VERSION}).")
         except Exception as e:
             logger.info(f"No se pudo verificar versión más reciente: {e}")
+
+    def _consume_force_full_flag(self) -> Tuple[bool, str]:
+        if self._force_full_roster.is_set():
+            self._force_full_roster.clear()
+            return True, self._force_reason
+        return False, ""
 
     def _print_health_panel(self):
         panel = [
@@ -688,7 +775,7 @@ class GuildActivityBridge:
                                     self._upload_stats_incremental_to_web(processed_data["stats"], web_session_id)
 
                                 # 3B) Roster + chat por sesión en lotes (evita 413)
-                                self._upload_chunked_to_web(processed_data, web_session_id)
+                                self._upload_chunked_to_web(processed_data, web_session_id, *self._consume_force_full_flag())
 
 
         except Exception as e:
@@ -1191,7 +1278,7 @@ class GuildActivityBridge:
             logger.error(f"{Fore.RED}Error stats incremental web: {e}", exc_info=True)
             # NO abortamos el resto; roster/chat se puede subir igual.
 
-    def _upload_chunked_to_web(self, processed_data: Dict, upload_session_id: str):
+    def _upload_chunked_to_web(self, processed_data: Dict, upload_session_id: str, force_full: bool = False, force_reason: str = ""):
         """
         Mantiene el nombre del método del V42, pero:
           - usa snake_case que el backend espera, y también camelCase por compat
@@ -1207,11 +1294,52 @@ class GuildActivityBridge:
             return
 
         added, updated, removed = self._compute_roster_delta(roster_members)
-        if added or updated or removed:
+        roster_mode = "delta"
+        if force_full:
+            roster_members = roster_members
+            roster_mode = "full"
+            logger.info(f"{Fore.CYAN}Envío completo de roster solicitado ({force_reason or 'manual'}). {len(roster_members)} miembros se enviarán en pleno.")
+        elif added or updated or removed:
             roster_members = {**added, **updated}
             logger.info(f"{Fore.CYAN}Delta roster -> added: {len(added)}, updated: {len(updated)}, removed: {len(removed)}")
         else:
-            logger.info(f"{Fore.CYAN}No hay cambios en roster/chat. Nada que subir.")
+            roster_mode = "no_change"
+            summary_payload = {
+                "upload_session_id": upload_session_id,
+                "is_final_batch": True,
+                "batch_index": 1,
+                "total_batches": 1,
+                "removed_members": [],
+                "uploadSessionId": upload_session_id,
+                "isFinalBatch": True,
+                "batchIndex": 1,
+                "totalBatches": 1,
+                "removedMembers": [],
+                "master_roster": {},
+                "data": {},
+                "roster_mode": roster_mode,
+                "roster_summary": {
+                    "mode": roster_mode,
+                    "added": 0,
+                    "updated": 0,
+                    "removed": 0,
+                    "total_members": len(roster_members),
+                    "reason": "sin cambios desde último snapshot",
+                },
+                "rosterMode": roster_mode,
+                "rosterSummary": {
+                    "mode": roster_mode,
+                    "added": 0,
+                    "updated": 0,
+                    "removed": 0,
+                    "totalMembers": len(roster_members),
+                    "reason": "sin cambios desde último snapshot",
+                },
+            }
+            self._post_to_web_with_retry(summary_payload, purpose="roster no-change heartbeat")
+            self.state.roster_snapshot = self._build_roster_snapshot(processed_data.get("roster_members") or processed_data.get("members") or {})
+            self._save_state()
+            logger.info(f"{Fore.CYAN}No hay cambios en roster/chat. Se envió heartbeat de estado al sitio.")
             return
 
         all_keys = list(roster_members.keys())
@@ -1256,25 +1384,43 @@ class GuildActivityBridge:
                         "lastSeen": last_seen_iso,
                     }
 
-            payload = {
-                # snake_case (backend)
-                "upload_session_id": session_id,
-                "is_final_batch": bool(is_final),
-                "batch_index": int(batch_index),
-                "total_batches": int(total_batches),
-                "removed_members": removed if is_final else [],
+                payload = {
+                    # snake_case (backend)
+                    "upload_session_id": session_id,
+                    "is_final_batch": bool(is_final),
+                    "batch_index": int(batch_index),
+                    "total_batches": int(total_batches),
+                    "removed_members": removed if is_final and roster_mode in ("delta", "full") else [],
+                    "roster_mode": roster_mode,
+                    "roster_summary": {
+                        "mode": roster_mode,
+                        "added": len(added) if roster_mode in ("delta", "full") else 0,
+                        "updated": len(updated) if roster_mode in ("delta", "full") else 0,
+                        "removed": len(removed) if roster_mode in ("delta", "full") else 0,
+                        "total_members": len(processed_data.get("roster_members") or processed_data.get("members") or {}),
+                        "reason": force_reason if roster_mode == "full" else "delta",
+                    },
 
-                # camelCase (por si tu backend viejo lo usaba)
-                "uploadSessionId": session_id,
-                "isFinalBatch": bool(is_final),
-                "batchIndex": int(batch_index),
-                "totalBatches": int(total_batches),
-                "removedMembers": removed if is_final else [],
+                    # camelCase (por si tu backend viejo lo usaba)
+                    "uploadSessionId": session_id,
+                    "isFinalBatch": bool(is_final),
+                    "batchIndex": int(batch_index),
+                    "totalBatches": int(total_batches),
+                    "removedMembers": removed if is_final and roster_mode in ("delta", "full") else [],
+                    "rosterMode": roster_mode,
+                    "rosterSummary": {
+                        "mode": roster_mode,
+                        "added": len(added) if roster_mode in ("delta", "full") else 0,
+                        "updated": len(updated) if roster_mode in ("delta", "full") else 0,
+                        "removed": len(removed) if roster_mode in ("delta", "full") else 0,
+                        "totalMembers": len(processed_data.get("roster_members") or processed_data.get("members") or {}),
+                        "reason": force_reason if roster_mode == "full" else "delta",
+                    },
 
-                "master_roster": master_roster,
-                "data": chat_data,
-                # stats NO aquí (se sube separado / incremental)
-            }
+                    "master_roster": master_roster,
+                    "data": chat_data,
+                    # stats NO aquí (se sube separado / incremental)
+                }
             return payload
 
         # Upload loop con auto-ajuste 413
