@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Guild Activity Tracker Bridge - Versión 43.0 (THE RELAY TANK)
 Robust bridge between WoW SavedVariables (GuildActivityTrackerDB) and:
@@ -23,7 +25,6 @@ import threading
 import queue
 import platform
 import importlib.util
-import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Tuple, Optional, Iterable
@@ -46,20 +47,6 @@ if tk_spec:
     import tkinter as tk  # type: ignore
 else:
     tk = None  # type: ignore
-
-# UI opcional mejorada (customtkinter + PIL). Si no están instalados, la app cae a modo consola.
-ctk_spec = importlib.util.find_spec("customtkinter")
-if ctk_spec:
-    import customtkinter as ctk  # type: ignore
-else:
-    ctk = None  # type: ignore
-
-pil_spec = importlib.util.find_spec("PIL")
-if pil_spec:
-    from PIL import Image, ImageEnhance  # type: ignore
-else:
-    Image = None  # type: ignore
-    ImageEnhance = None  # type: ignore
 
 try:
     from zoneinfo import ZoneInfo  # py3.9+
@@ -90,61 +77,6 @@ LOCAL_QUEUE_FILE = os.getenv("UPLOAD_QUEUE_FILE", "upload_queue.jsonl")
 UPLOADER_VERSION = "43.0"
 
 
-# =========================
-# UI helpers / estilos
-# =========================
-COLORS = {
-    "bg": "#0B1220",
-    "panel": "#111C2E",
-    "panel2": "#0F1A2B",
-    "border": "#1B2A44",
-    "text": "#EAF0FF",
-    "muted": "#AAB7D1",
-    "gold": "#F5C542",
-    "ok": "#2ECC71",
-    "warn": "#F39C12",
-    "err": "#E74C3C",
-    "info": "#3498DB",
-}
-
-FONT_TITLE = ("Segoe UI", 22, "bold")
-FONT_H2 = ("Segoe UI", 14, "bold")
-FONT_BODY = ("Segoe UI", 13)
-FONT_MONO = ("Consolas", 11)
-
-
-def resource_path(rel_path: str) -> str:
-    """Permite cargar assets tanto en entorno dev como en ejecutable PyInstaller."""
-    base = getattr(sys, "_MEIPASS", os.path.abspath("."))
-    return os.path.join(base, rel_path)
-
-
-def shorten_path(path: str, max_len: int = 48) -> str:
-    if len(path) <= max_len:
-        return path
-    head = path[: max_len // 2 - 2]
-    tail = path[-max_len // 2 + 2 :]
-    return f"{head}...{tail}"
-
-
-def fmt_age(ts_iso: Optional[str]) -> str:
-    if not ts_iso:
-        return "—"
-    try:
-        dt = datetime.fromisoformat(ts_iso)
-    except Exception:
-        return ts_iso
-    delta = datetime.now(dt.tzinfo or timezone.utc) - dt
-    seconds = int(delta.total_seconds())
-    if seconds < 60:
-        return f"hace {seconds}s"
-    if seconds < 3600:
-        return f"hace {seconds // 60}m"
-    if seconds < 86400:
-        return f"hace {seconds // 3600}h"
-    return f"hace {seconds // 86400}d"
-
-
 @dataclass
 class BridgeState:
     last_uploaded_stats_ts: int = 0
@@ -170,7 +102,88 @@ class BridgeState:
 class LocalUploadQueue:
     def __init__(self, path: str):
         self.path = path
-@@ -187,51 +257,54 @@ class Config:
+
+    def _ensure_dir(self):
+        base = os.path.dirname(self.path)
+        if base and not os.path.isdir(base):
+            os.makedirs(base, exist_ok=True)
+
+    def enqueue(self, payload: Dict[str, Any], purpose: str):
+        try:
+            self._ensure_dir()
+            record = {
+                "ts": int(time.time()),
+                "purpose": purpose,
+                "payload": payload,
+            }
+            with open(self.path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        except Exception as e:
+            logger.warning(f"No pude guardar en cola local: {e}")
+
+    def load_entries(self) -> List[Dict[str, Any]]:
+        entries: List[Dict[str, Any]] = []
+        if not os.path.isfile(self.path):
+            return entries
+        try:
+            with open(self.path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        entries.append(json.loads(line))
+                    except Exception:
+                        continue
+        except Exception as e:
+            logger.warning(f"No pude leer cola local: {e}")
+        return entries
+
+    def rewrite(self, entries: List[Dict[str, Any]]):
+        try:
+            self._ensure_dir()
+            tmp = self.path + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                for e in entries:
+                    f.write(json.dumps(e, ensure_ascii=False) + "\n")
+            os.replace(tmp, self.path)
+        except Exception as e:
+            logger.warning(f"No pude reescribir cola local: {e}")
+
+    def flush(self, sender):
+        entries = self.load_entries()
+        if not entries:
+            return
+        remaining: List[Dict[str, Any]] = []
+        logger.info(f"{Fore.CYAN}Procesando cola local: {len(entries)} pendientes...")
+        for entry in entries:
+            payload = entry.get("payload", {})
+            purpose = entry.get("purpose", "queued upload")
+            try:
+                sender(payload, purpose=purpose, allow_queue=False)
+            except Exception as e:
+                logger.warning(f"No pude re-subir payload en cola ({purpose}): {e}")
+                remaining.append(entry)
+        if remaining:
+            self.rewrite(remaining)
+        else:
+            try:
+                os.remove(self.path)
+            except Exception:
+                pass
+
+
+class Config:
+    """
+    Mantiene los mismos campos del V42, pero agrega un par de opciones útiles.
+    """
+    def __init__(self):
+        load_dotenv()
+
+        # WoW SavedVariables file path (GuildActivityTracker.lua)
+        raw_path = os.getenv('WOW_ADDON_PATH', '').strip()
+        self.wow_addon_path = os.path.normpath(os.path.expandvars(raw_path)) if raw_path else ""
+
         # Realm default para normalizar nombres (si el roster viene sin "-Reino")
         self.default_realm = os.getenv("GUILD_REALM", os.getenv("DEFAULT_REALM", "")).replace(" ", "")
 
@@ -196,10 +209,7 @@ class LocalUploadQueue:
         self.enable_ui = os.getenv("ENABLE_UI", "true").lower() == "true"
         base_dir = os.path.dirname(os.path.abspath(__file__))
         self.ui_icon_path = os.path.normpath(
-            os.getenv("GAT_ICON_PATH", os.path.join(base_dir, "Media", "app.ico"))
-        )
-        self.ui_logo_path = os.path.normpath(
-            os.getenv("GAT_LOGO_PATH", os.path.join(base_dir, "Media", "gat_logo.png"))
+            os.getenv("GAT_ICON_PATH", os.path.join(base_dir, "gat_icon.png"))
         )
 
         # Safety: si se detecta roster muy chico, NO saltar (guild pequeña). Ajustable:
@@ -225,7 +235,109 @@ class LocalUploadQueue:
             logger.warning(f"{Fore.YELLOW}AVISO: Archivo LUA no encontrado en {self.wow_addon_path}. "
                            f"El bridge quedará vigilando hasta que exista.")
 
-@@ -341,271 +414,585 @@ class Config:
+    def _auto_detect_wow_addon_path(self, manual_base: Optional[str] = None) -> str:
+        """
+        Busca GuildActivityTracker.lua en las rutas comunes de WoW para evitar fallar
+        cuando WOW_ADDON_PATH no está configurado. Devuelve la primera coincidencia.
+        """
+
+        candidates = []
+        home = os.path.expanduser("~")
+
+        def _add_base(base_root: str):
+            if base_root and base_root not in candidates:
+                candidates.append(base_root)
+
+        # Intentos más comunes
+        _add_base(os.path.join(home, "Documents", "World of Warcraft"))
+        _add_base(os.path.join(home, "World of Warcraft"))
+
+        if os.name == "nt":
+            userprofile = os.getenv("USERPROFILE", home)
+            _add_base(os.path.join(userprofile, "Documents", "World of Warcraft"))
+            _add_base(os.path.join(userprofile, "AppData", "Roaming", "World of Warcraft"))
+            _add_base(os.path.join(userprofile, "AppData", "Local", "World of Warcraft"))
+            program_files = os.getenv("PROGRAMFILES", os.path.join("C:\\", "Program Files"))
+            program_files_x86 = os.getenv("PROGRAMFILES(X86)", os.path.join("C:\\", "Program Files (x86)"))
+            localized_pf = [
+                os.path.join("C:\\", "Archivos de programa"),
+                os.path.join("C:\\", "Archivos de programa (x86)"),
+                os.path.join("C:\\", "Programas"),
+            ]
+
+            _add_base(os.path.join(program_files, "World of Warcraft"))
+            _add_base(os.path.join(program_files_x86, "World of Warcraft"))
+            for pf in localized_pf:
+                _add_base(os.path.join(pf, "World of Warcraft"))
+            _add_base(os.path.join("C:\\", "World of Warcraft"))
+
+        if manual_base:
+            candidates.insert(0, manual_base)
+
+        flavors = ["", "_retail_", "_classic_", "_classic_era_", "_ptr_", "_beta_"]
+
+        fallback = ""
+
+        for base in candidates:
+            for flavor in flavors:
+                wow_root = os.path.join(base, flavor) if flavor else base
+                if not os.path.isdir(wow_root):
+                    continue
+
+                # Escanear recursivamente buscando SavedVariables o el archivo objetivo.
+                for current, dirs, files in os.walk(wow_root):
+                    # Evita explorar demasiado profundo para no tardar (3 niveles extra).
+                    depth = current.replace(wow_root, "").count(os.sep)
+                    if depth > 5:
+                        dirs[:] = []
+                        continue
+
+                    if "GuildActivityTracker.lua" in files:
+                        return os.path.normpath(os.path.join(current, "GuildActivityTracker.lua"))
+
+                    if current.endswith("SavedVariables") and not fallback:
+                        fallback = os.path.normpath(os.path.join(current, "GuildActivityTracker.lua"))
+
+                # Si no encontramos nada caminando el árbol pero sí existe WTF/Account, toma la primera carpeta.
+                account_root = os.path.join(wow_root, "WTF", "Account")
+                if os.path.isdir(account_root) and not fallback:
+                    try:
+                        accounts = [a for a in os.listdir(account_root) if os.path.isdir(os.path.join(account_root, a))]
+                        if accounts:
+                            saved_vars = os.path.join(account_root, accounts[0], "SavedVariables")
+                            fallback = os.path.normpath(os.path.join(saved_vars, "GuildActivityTracker.lua"))
+                    except Exception:
+                        pass
+
+        return fallback
+
+    def _prompt_wow_addon_path(self) -> str:
+        """
+        UI simple para pedir al usuario la ruta de instalación de WoW cuando la
+        detección automática falla. Permite pegar directamente la ruta al archivo
+        GuildActivityTracker.lua o al directorio raíz del juego.
+        """
+
+        if not sys.stdin.isatty():
+            return ""
+
+        banner = "\n" + "=" * 68 + "\n" + \
+                 " Configuración interactiva - Guild Activity Bridge\n" + \
+                 " No se encontró la ruta a GuildActivityTracker.lua.\n" + \
+                 " Ayúdame indicándome dónde está instalado World of Warcraft.\n" + \
+                 "=" * 68 + "\n"
+        print(banner)
+        print("Pasos:")
+        print(" 1) Abre el explorador y copia la ruta donde está instalado el juego")
+        print(r"    (ej: C:\\Program Files (x86)\\World of Warcraft o tu carpeta personalizada).")
+        print(" 2) O pega directamente la ruta completa al archivo GuildActivityTracker.lua si ya existe.\n")
+
+        while True:
+            prompt_text = "Ruta de instalación de WoW o al archivo GuildActivityTracker.lua (enter para cancelar): "
+            user_input = input(prompt_text).strip()
+
+            if not user_input:
+                print("Configuración cancelada. Puedes definir WOW_ADDON_PATH en .env más tarde.")
                 return ""
 
             expanded = os.path.normpath(os.path.expandvars(os.path.expanduser(user_input)))
@@ -251,289 +363,118 @@ class LocalUploadQueue:
             print("No pude localizar GuildActivityTracker.lua en la ruta indicada. Verifica e intenta nuevamente.\n")
 
 
-class UILogHandler(logging.Handler):
-    """Envía las líneas de log al panel UI sin bloquear el loop."""
-
-    def __init__(self, ui: "BridgeUI"):
-        super().__init__()
-        self.ui = ui
-
-    def emit(self, record: logging.LogRecord) -> None:
-        try:
-            level = record.levelname.upper()
-            msg = self.format(record)
-            self.ui.push_log(level, msg)
-        except Exception:
-            pass
-
-
 class BridgeUI:
-    def __init__(
-        self,
-        enabled: bool,
-        icon_path: str,
-        logo_path: str,
-        on_full_roster: Optional[callable] = None,
-        on_open_folder: Optional[callable] = None,
-        on_copy_path: Optional[callable] = None,
-        on_restart: Optional[callable] = None,
-        on_exit: Optional[callable] = None,
-    ):
-        self.enabled = enabled and ctk is not None
+    def __init__(self, enabled: bool, icon_path: str, on_full_roster: Optional[callable] = None, on_exit: Optional[callable] = None):
+        self.enabled = enabled and tk is not None
         self.icon_path = icon_path
-        self.logo_path = logo_path
         self.on_full_roster = on_full_roster
-        self.on_open_folder = on_open_folder
-        self.on_copy_path = on_copy_path
-        self.on_restart = on_restart
         self.on_exit = on_exit
-        self.state: Dict[str, Any] = {
-            "wow_detected": False,
-            "watch_path": "",
-            "last_parse": None,
-            "last_upload": None,
-            "latency_ms": None,
-            "payload_bytes": None,
-            "version": UPLOADER_VERSION,
-            "uploading": False,
-            "last_error": None,
-        }
-        self.event_q: "queue.Queue[Tuple[str, Any]]" = queue.Queue()
-        self.root: Optional[ctk.CTk] = None if not self.enabled else ctk.CTk()
+        self.root: Optional[tk.Tk] = None if tk is None else (tk.Tk() if self.enabled else None)
+        self.queue: "queue.Queue[Dict[str, str]]" = queue.Queue()
+        self.labels: Dict[str, "tk.StringVar"] = {}
 
-        if not self.enabled:
-            if enabled and ctk is None:
-                logger.info("Interfaz gráfica moderna no disponible (customtkinter no instalado). Usando modo consola.")
+        if not self.enabled or self.root is None:
+            if enabled and tk is None:
+                logger.info("Interfaz gráfica no disponible (tkinter no instalado). Usando modo consola.")
             return
 
-        ctk.set_appearance_mode("dark")
-        ctk.set_default_color_theme("dark-blue")
-
-        self.root.title("Guild Activity Tracker Bridge — Command Center")
-        self.root.geometry("1160x700")
-        self.root.minsize(1000, 640)
-        self.root.configure(fg_color=COLORS["bg"])
-        self.root.grid_rowconfigure(1, weight=1)
-        self.root.grid_columnconfigure(0, weight=1)
-
+        self.root.title("Guild Activity Tracker Bridge")
+        self.root.configure(bg="#0f172a")
+        self.root.geometry("540x310")
         try:
             if os.path.isfile(self.icon_path):
-                self.root.iconbitmap(self.icon_path)
-        except Exception:
-            pass
-        try:
-            if tk is not None and os.path.isfile(self.icon_path):
                 self.root.iconphoto(False, tk.PhotoImage(file=self.icon_path))
         except Exception:
             pass
 
-        self.logo_header = None
-        self.logo_watermark = None
-        if Image is not None:
-            try:
-                base_img = Image.open(self.logo_path).convert("RGBA")
-                head = base_img.resize((48, 48))
-                self.logo_header = ctk.CTkImage(light_image=head, dark_image=head, size=(48, 48))
-
-                wm = base_img.resize((780, 780))
-                if ImageEnhance is not None:
-                    wm = ImageEnhance.Color(wm).enhance(0.25)
-                    wm = ImageEnhance.Contrast(wm).enhance(0.8)
-                alpha = wm.split()[-1].point(lambda a: int(a * 0.08))
-                wm.putalpha(alpha)
-                self.logo_watermark = ctk.CTkImage(light_image=wm, dark_image=wm, size=(780, 780))
-            except Exception:
-                self.logo_header = None
-                self.logo_watermark = None
-
-        self._build_header()
-        self._build_body()
-        self._build_footer()
-        self.root.protocol("WM_DELETE_WINDOW", self._handle_close)
-        self.root.after(120, self._poll_events)
-
-    # ---------- UI pieces ----------
-    def _build_header(self):
-        self.header = ctk.CTkFrame(self.root, fg_color=COLORS["panel2"], corner_radius=0)
-        self.header.grid(row=0, column=0, sticky="ew")
-        self.header.grid_columnconfigure(1, weight=1)
-
-        if self.logo_header:
-            ctk.CTkLabel(self.header, image=self.logo_header, text="").grid(row=0, column=0, rowspan=2, padx=(18, 12), pady=16)
-        else:
-            ctk.CTkLabel(self.header, text="GAT", text_color=COLORS["gold"], font=("Segoe UI", 24, "bold"))\
-                .grid(row=0, column=0, rowspan=2, padx=(18, 12), pady=16)
-
-        self.title_lbl = ctk.CTkLabel(self.header, text="Guild Activity Tracker Bridge", font=FONT_TITLE, text_color=COLORS["text"])
-        self.title_lbl.grid(row=0, column=1, sticky="w", pady=(16, 0))
-
-        self.sub_lbl = ctk.CTkLabel(
-            self.header,
-            text="Command Center • Telemetry & Upload Control",
-            font=FONT_BODY,
-            text_color=COLORS["muted"],
-        )
-        self.sub_lbl.grid(row=1, column=1, sticky="w", pady=(0, 16))
-
-        self.pill = ctk.CTkFrame(self.header, corner_radius=999, fg_color=COLORS["info"], border_color=COLORS["border"], border_width=1)
-        self.pill.grid(row=0, column=2, rowspan=2, padx=18, pady=16, sticky="e")
-        self.pill_lbl = ctk.CTkLabel(self.pill, text="IDLE", font=("Segoe UI", 12, "bold"), text_color="#081018")
-        self.pill_lbl.pack(padx=12, pady=6)
-
-    def _build_body(self):
-        self.body = ctk.CTkFrame(self.root, fg_color="transparent")
-        self.body.grid(row=1, column=0, sticky="nsew", padx=18, pady=18)
-        self.body.grid_columnconfigure(0, weight=1)
-        self.body.grid_columnconfigure(1, weight=1)
-        self.body.grid_rowconfigure(0, weight=1)
-
-        if self.logo_watermark:
-            wm = ctk.CTkLabel(self.body, image=self.logo_watermark, text="")
-            wm.place(relx=0.55, rely=0.52, anchor="center")
-
-        # Telemetría
-        self.left = ctk.CTkFrame(self.body, fg_color=COLORS["panel2"], corner_radius=18)
-        self.left.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
-        self.left.grid_columnconfigure((0, 1), weight=1)
-        ctk.CTkLabel(self.left, text="Telemetry", font=FONT_H2, text_color=COLORS["text"]).grid(row=0, column=0, columnspan=2, sticky="w", padx=16, pady=(14, 10))
-
-        self.card_wow = self._make_card(self.left, "Estado WoW", "🛰️")
-        self.card_file = self._make_card(self.left, "Archivo vigilado", "📁")
-        self.card_parse = self._make_card(self.left, "Último parse", "⏱️")
-        self.card_upload = self._make_card(self.left, "Último upload", "☁️")
-        self.card_latency = self._make_card(self.left, "Latencia", "📡")
-        self.card_payload = self._make_card(self.left, "Payload", "📦")
-        self.card_version = self._make_card(self.left, "Versión", "🏷️")
-
-        cards = [
-            (self.card_wow, 1, 0), (self.card_file, 1, 1),
-            (self.card_parse, 2, 0), (self.card_upload, 2, 1),
-            (self.card_latency, 3, 0), (self.card_payload, 3, 1),
-            (self.card_version, 4, 0),
-        ]
-        for card, r, c in cards:
-            card.grid(row=r, column=c, sticky="nsew", padx=12, pady=10)
-
-        # Log + acciones
-        self.right = ctk.CTkFrame(self.body, fg_color=COLORS["panel2"], corner_radius=18)
-        self.right.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
-        self.right.grid_rowconfigure(1, weight=1)
-        self.right.grid_columnconfigure(0, weight=1)
-
-        topbar = ctk.CTkFrame(self.right, fg_color="transparent")
-        topbar.grid(row=0, column=0, sticky="ew", padx=16, pady=(14, 10))
-        topbar.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(topbar, text="Activity Log", font=FONT_H2, text_color=COLORS["text"]).grid(row=0, column=0, sticky="w")
-        ctk.CTkButton(topbar, text="Copiar log", width=100, fg_color=COLORS["panel"], hover_color=COLORS["border"], command=self._copy_log).grid(row=0, column=1, padx=(8, 0))
-        ctk.CTkButton(topbar, text="Limpiar", width=90, fg_color=COLORS["panel"], hover_color=COLORS["border"], command=self._clear_log).grid(row=0, column=2, padx=(8, 0))
-
-        self.log = ctk.CTkTextbox(self.right, font=FONT_MONO, wrap="word", fg_color=COLORS["panel"], corner_radius=14, text_color=COLORS["text"])
-        self.log.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 12))
-        self.log.configure(state="disabled")
-        for name, color in ("INFO", COLORS["info"]), ("WARNING", COLORS["warn"]), ("ERROR", COLORS["err"]):
-            try:
-                self.log.tag_config(name, foreground=color)
-            except Exception:
-                pass
-
-        action_bar = ctk.CTkFrame(self.right, fg_color="transparent")
-        action_bar.grid(row=2, column=0, sticky="ew", padx=16, pady=(0, 16))
-        action_bar.grid_columnconfigure((0, 1, 2, 3), weight=1)
-        ctk.CTkButton(action_bar, text="Abrir carpeta", fg_color=COLORS["panel"], hover_color=COLORS["border"], command=self._open_folder).grid(row=0, column=0, padx=6)
-        ctk.CTkButton(action_bar, text="Copiar ruta", fg_color=COLORS["panel"], hover_color=COLORS["border"], command=self._copy_path).grid(row=0, column=1, padx=6)
-        ctk.CTkButton(action_bar, text="Reiniciar bridge", fg_color=COLORS["panel"], hover_color=COLORS["border"], command=self._restart).grid(row=0, column=2, padx=6)
-        ctk.CTkButton(action_bar, text="Minimizar", fg_color=COLORS["panel"], hover_color=COLORS["border"], command=self._minimize).grid(row=0, column=3, padx=6)
-
-    def _build_footer(self):
-        self.footer = ctk.CTkFrame(self.root, fg_color=COLORS["panel2"], corner_radius=0)
-        self.footer.grid(row=2, column=0, sticky="ew")
-        self.footer.grid_columnconfigure(0, weight=1)
-
-        inner = ctk.CTkFrame(self.footer, fg_color="transparent")
-        inner.grid(row=0, column=0, sticky="ew", padx=18, pady=12)
-        inner.grid_columnconfigure(0, weight=1)
-
-        self.btn_send = ctk.CTkButton(
-            inner,
-            text="Enviar roster completo ahora",
-            height=46,
-            fg_color=COLORS["gold"],
-            hover_color="#FFD36A",
-            text_color="#081018",
+        header = tk.Label(
+            self.root,
+            text="Guild Activity Tracker Bridge",
+            bg="#0f172a",
+            fg="#facc15",
             font=("Segoe UI", 14, "bold"),
+            anchor="w",
+            padx=10,
+            pady=6,
+        )
+        header.pack(fill="x")
+
+        fields = [
+            ("wow", "Estado WoW"),
+            ("watch", "Archivo vigilado"),
+            ("parse", "Último parse"),
+            ("upload", "Último upload"),
+            ("latency", "Latencia"),
+            ("payload", "Tamaño payload"),
+            ("version", "Versión"),
+        ]
+
+        for key, label in fields:
+            var = tk.StringVar(value=f"{label}: ...")
+            self.labels[key] = var
+            row = tk.Label(
+                self.root,
+                textvariable=var,
+                bg="#0f172a",
+                fg="#e5e7eb",
+                anchor="w",
+                justify="left",
+                font=("Segoe UI", 10),
+                padx=10,
+                pady=2,
+            )
+            row.pack(fill="x")
+
+        controls = tk.Frame(self.root, bg="#0f172a")
+        controls.pack(fill="x", pady=8)
+        tk.Button(
+            controls,
+            text="Enviar roster completo ahora",
             command=self._request_full,
+            bg="#1e293b",
+            fg="#e5e7eb",
+            activebackground="#334155",
+            activeforeground="#facc15",
+            relief="groove",
+            padx=8,
+            pady=4,
+        ).pack(side="left", padx=10)
+
+        footer = tk.Label(
+            self.root,
+            text="Cierra esta ventana para salir del bridge.",
+            bg="#0f172a",
+            fg="#94a3b8",
+            anchor="w",
+            padx=10,
+            pady=8,
+            font=("Segoe UI", 9, "italic"),
         )
-        self.btn_send.grid(row=0, column=0, sticky="w")
+        footer.pack(fill="x", side="bottom")
 
-        self.hint = ctk.CTkLabel(
-            inner,
-            text="Tip: Mantén el bridge abierto para que el watcher siga subiendo.",
-            text_color=COLORS["muted"],
-            font=FONT_BODY,
-        )
-        self.hint.grid(row=1, column=0, sticky="w", pady=(6, 0))
+        self.root.protocol("WM_DELETE_WINDOW", self._handle_close)
+        self.root.after(400, self._drain_queue)
 
-    def _make_card(self, parent, label: str, icon: str):
-        frame = ctk.CTkFrame(parent, fg_color=COLORS["panel"], corner_radius=14)
-        frame.grid_columnconfigure(0, weight=1)
-        top = ctk.CTkFrame(frame, fg_color="transparent")
-        top.grid(row=0, column=0, sticky="ew", padx=14, pady=(12, 0))
-        top.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(top, text=f"{icon} {label}", text_color=COLORS["muted"], font=FONT_BODY).grid(row=0, column=0, sticky="w")
-        value_lbl = ctk.CTkLabel(frame, text="—", text_color=COLORS["text"], font=("Segoe UI", 16, "bold"))
-        value_lbl.grid(row=1, column=0, sticky="w", padx=14, pady=(6, 12))
-        return value_lbl
+    def _drain_queue(self):
+        try:
+            while not self.queue.empty():
+                update = self.queue.get_nowait()
+                self._apply(update)
+        finally:
+            if self.root is not None:
+                self.root.after(500, self._drain_queue)
 
-    # ---------- Interacción ----------
+    def _apply(self, update: Dict[str, str]):
+        for key, var in self.labels.items():
+            if key in update:
+                var.set(update[key])
+
     def _request_full(self):
         if self.on_full_roster:
-            self.btn_send.configure(state="disabled")
-            self.push_log("INFO", "Solicitud manual: Enviando roster completo…")
-            threading.Thread(target=self.on_full_roster, daemon=True).start()
-
-    def _open_folder(self):
-        if self.on_open_folder:
             try:
-                self.on_open_folder()
+                self.on_full_roster()
             except Exception:
                 pass
-
-    def _copy_path(self):
-        if self.on_copy_path:
-            try:
-                self.on_copy_path()
-            except Exception:
-                pass
-
-    def _restart(self):
-        if self.on_restart:
-            try:
-                self.on_restart()
-            except Exception:
-                pass
-
-    def _minimize(self):
-        try:
-            self.root.iconify()
-        except Exception:
-            pass
-
-    def _clear_log(self):
-        try:
-            self.log.configure(state="normal")
-            self.log.delete("1.0", "end")
-            self.log.configure(state="disabled")
-        except Exception:
-            pass
-
-    def _copy_log(self):
-        try:
-            content = self.log.get("1.0", "end")
-            self.root.clipboard_clear()
-            self.root.clipboard_append(content)
-            self.push_log("INFO", "Log copiado al portapapeles")
-        except Exception:
-            pass
 
     def _handle_close(self):
         if self.on_exit:
@@ -544,128 +485,25 @@ class BridgeUI:
         if self.root is not None:
             self.root.destroy()
 
-    # ---------- Loop ----------
-    def _poll_events(self):
-        try:
-            while True:
-                evt = self.event_q.get_nowait()
-                self._apply_event(evt)
-        except queue.Empty:
-            pass
-        finally:
-            if self.root is not None:
-                self.root.after(160, self._poll_events)
-
-    def _apply_event(self, evt: Tuple[str, Any]):
-        if not self.enabled:
-            return
-        kind, data = evt
-        if kind == "STATUS":
-            self._render_status(data)
-        elif kind == "LOG":
-            level, msg = data
-            self._append_log(level, msg)
-        elif kind == "UI":
-            if data.get("enable_send"):
-                self.btn_send.configure(state="normal")
-
-    def _append_log(self, level: str, msg: str):
-        ts = datetime.now().strftime("%H:%M:%S")
-        line = f"[{ts}] {level:<5} {msg}\n"
-        try:
-            self.log.configure(state="normal")
-            tag = "ERROR" if level.startswith("ERR") else ("WARNING" if "WARN" in level else "INFO")
-            self.log.insert("end", line, tag)
-            self.log.see("end")
-            self.log.configure(state="disabled")
-        except Exception:
-            pass
-
-    def _render_status(self, data: Dict[str, Any]):
-        wow = data.get("wow")
-        file_txt = data.get("file")
-        last_parse = data.get("last_parse")
-        last_upload = data.get("last_upload")
-        latency = data.get("latency_ms")
-        payload = data.get("payload_bytes")
-        version = data.get("version")
-        pill = data.get("pill")
-        uploading = data.get("uploading")
-
-        if wow is not None:
-            txt, ok = wow
-            self.card_wow.configure(text_color=COLORS["ok"] if ok else COLORS["err"])
-            self.card_wow.configure(text=txt)
-        if file_txt is not None:
-            self.card_file.configure(text=file_txt)
-        if last_parse is not None:
-            self.card_parse.configure(text=last_parse)
-        if last_upload is not None:
-            self.card_upload.configure(text=last_upload)
-        if latency is not None:
-            col = COLORS["ok"] if latency < 300 else (COLORS["warn"] if latency < 900 else COLORS["err"])
-            self.card_latency.configure(text=f"{latency} ms", text_color=col)
-        if payload is not None:
-            self.card_payload.configure(text=f"{payload} bytes")
-        if version is not None:
-            self.card_version.configure(text=str(version))
-        if pill is not None:
-            label, kind = pill
-            self._set_pill(label, kind)
-        if uploading is not None:
-            if uploading:
-                self._set_pill("SUBIENDO…", "info")
-
-    def _set_pill(self, text: str, kind: str):
-        color = COLORS.get(kind, COLORS["info"])
-        self.pill.configure(fg_color=color)
-        self.pill_lbl.configure(text=text, text_color="#081018")
-
-    # ---------- API público ----------
     def run(self):
-        if not self.enabled:
+        if not self.enabled or self.root is None:
             return
         self.root.mainloop()
-
-    def push_status(self, data: Dict[str, Any]):
-        if self.enabled:
-            self.event_q.put(("STATUS", data))
-
-    def push_log(self, level: str, msg: str):
-        if self.enabled:
-            self.event_q.put(("LOG", (level, msg)))
 
     def update(self, wow_running: bool, health: Dict[str, Any], watch_path: str):
         if not self.enabled:
             return
-        data = {
-            "wow": ("WoW detectado" if wow_running else "WoW no detectado", wow_running),
-            "file": shorten_path(watch_path),
-            "last_parse": f"{health.get('last_parse_ok') or 'pendiente'} ({fmt_age(health.get('last_parse_ok'))})" if health.get('last_parse_ok') else "pendiente",
-            "last_upload": f"{health.get('last_upload_ok') or 'pendiente'} ({fmt_age(health.get('last_upload_ok'))})" if health.get('last_upload_ok') else "pendiente",
-            "latency_ms": health.get("last_latency_ms"),
-            "payload_bytes": health.get("last_payload_size"),
-            "version": health.get("version", UPLOADER_VERSION),
+        status = {
+            "wow": f"Estado WoW: {'Detectado' if wow_running else 'No detectado'}",
+            "watch": f"Archivo vigilado: {watch_path}",
+            "parse": f"Último parse: {health.get('last_parse_ok') or 'pendiente'}",
+            "upload": f"Último upload: {health.get('last_upload_ok') or 'pendiente'}",
+            "latency": f"Latencia: {health.get('last_latency_ms') or 's/d'} ms",
+            "payload": f"Tamaño payload: {health.get('last_payload_size') or 's/d'} bytes",
+            "version": f"Versión: {health.get('version')}",
         }
-
-        pill_kind = "ok" if wow_running else "err"
-        pill_text = "ONLINE" if wow_running else "WoW no detectado"
-        if health.get("uploading"):
-            pill_kind, pill_text = "info", "SUBIENDO…"
-        if health.get("last_error"):
-            pill_kind, pill_text = "err", "ERROR"
-        data["pill"] = (pill_text, pill_kind)
-
-        self.push_status(data)
-
-    def notify_uploading(self, uploading: bool):
-        if not self.enabled:
-            return
-        self.push_status({"uploading": uploading})
-
-    def enable_send_button(self):
-        if self.enabled:
-            self.event_q.put(("UI", {"enable_send": True}))
+        if self.root is not None:
+            self.queue.put(status)
 
 
 class GuildActivityBridge:
@@ -679,8 +517,6 @@ class GuildActivityBridge:
             "last_latency_ms": None,
             "last_payload_size": None,
             "version": UPLOADER_VERSION,
-            "uploading": False,
-            "last_error": None,
         }
 
         self._session = requests.Session()
@@ -697,17 +533,9 @@ class GuildActivityBridge:
         self.ui = BridgeUI(
             self.config.enable_ui,
             self.config.ui_icon_path,
-            self.config.ui_logo_path,
             on_full_roster=lambda: self.request_full_roster("manual-ui"),
-            on_open_folder=self._open_watch_folder,
-            on_copy_path=self._copy_watch_path,
-            on_restart=self._restart_bridge,
             on_exit=self.stop,
         )
-        if self.ui.enabled:
-            handler = UILogHandler(self.ui)
-            handler.setLevel(logging.INFO)
-            logger.addHandler(handler)
 
 
     # =========================
@@ -756,36 +584,6 @@ class GuildActivityBridge:
     def stop(self):
         self._stop_event.set()
 
-    def _open_watch_folder(self):
-        try:
-            folder = os.path.dirname(self.config.wow_addon_path)
-            if not folder:
-                return
-            if platform.system().lower().startswith("win"):
-                os.startfile(folder)  # type: ignore
-            elif sys.platform == "darwin":
-                subprocess.Popen(["open", folder])
-            else:
-                subprocess.Popen(["xdg-open", folder])
-        except Exception as e:
-            logger.warning(f"No pude abrir la carpeta: {e}")
-
-    def _copy_watch_path(self):
-        try:
-            if self.ui.enabled and self.ui.root is not None:
-                self.ui.root.clipboard_clear()
-                self.ui.root.clipboard_append(self.config.wow_addon_path)
-                self.ui.push_log("INFO", "Ruta copiada al portapapeles")
-        except Exception as e:
-            logger.warning(f"No pude copiar ruta: {e}")
-
-    def _restart_bridge(self):
-        try:
-            logger.info("Reiniciando bridge...")
-            os.execl(sys.executable, sys.executable, *sys.argv)
-        except Exception as e:
-            logger.error(f"No se pudo reiniciar: {e}")
-
     # =========================
     # Loop principal
     # =========================
@@ -811,7 +609,153 @@ class GuildActivityBridge:
             while not self._stop_event.is_set():
                 try:
                     line = input().strip().lower()
-@@ -759,50 +1146,51 @@ class GuildActivityBridge:
+                except EOFError:
+                    break
+                except Exception:
+                    break
+
+                if line in ("full", "f", "full roster", "roster full"):
+                    self.request_full_roster("manual-cli")
+
+        threading.Thread(target=_listen, daemon=True).start()
+
+    def _run_loop(self):
+        last_wow_state: Optional[bool] = None
+
+        while not self._stop_event.is_set():
+            try:
+                wow_running = self._is_wow_running()
+                if wow_running != last_wow_state:
+                    if wow_running:
+                        logger.info("World of Warcraft detectado. Activando monitoreo y cola local.")
+                        self.local_queue.flush(self._post_to_web_with_retry)
+                        self.last_mtime = 0
+                    else:
+                        logger.info("World of Warcraft no está en ejecución. Esperando...")
+                last_wow_state = wow_running
+
+                if not wow_running:
+                    self.ui.update(False, self.health, self.config.wow_addon_path)
+                    time.sleep(self.config.poll_interval)
+                    continue
+
+                if os.path.isfile(self.config.wow_addon_path):
+                    current_mtime = os.path.getmtime(self.config.wow_addon_path)
+                    needs_process = False
+                    if self.last_mtime == 0 or current_mtime != self.last_mtime:
+                        needs_process = True
+                    elif self._force_full_roster.is_set():
+                        needs_process = True
+
+                    if needs_process:
+                        if current_mtime != self.last_mtime and self.last_mtime != 0:
+                            logger.info(f"{Fore.CYAN}¡Cambio detectado! Esperando estabilización de archivo...")
+                            self._wait_for_file_stable(self.config.wow_addon_path)
+                        self.last_mtime = current_mtime
+                        self.process_file()
+                self.ui.update(True, self.health, self.config.wow_addon_path)
+                time.sleep(self.config.poll_interval)
+            except KeyboardInterrupt:
+                logger.info("Cerrando bridge por KeyboardInterrupt.")
+                self.stop()
+                break
+            except Exception as e:
+                logger.error(f"Error ciclo: {e}", exc_info=True)
+                time.sleep(5)
+
+    def _wait_for_file_stable(self, path: str, checks: int = 4, delay: float = 0.7):
+        """
+        Evita parsear mientras WoW todavía está escribiendo el SavedVariables.
+        """
+        last = (-1, -1.0)
+        stable = 0
+        for _ in range(checks * 3):
+            try:
+                st = os.stat(path)
+                cur = (st.st_size, st.st_mtime)
+                if cur == last:
+                    stable += 1
+                    if stable >= checks:
+                        return
+                else:
+                    stable = 0
+                    last = cur
+            except Exception:
+                pass
+            time.sleep(delay)
+        # Si no estabiliza rápido, igual continuamos: /reload suele terminar pronto.
+
+    def _check_latest_version(self):
+        try:
+            base = self.config.web_api_url.rsplit("/api", 1)[0]
+            url = f"{base}/api/uploader/latest"
+            resp = self._session.get(url, timeout=10)
+            if resp.status_code != 200:
+                return
+            data = resp.json()
+            latest = str(data.get("version") or data.get("latest") or "")
+            if latest and latest != UPLOADER_VERSION:
+                logger.warning(f"{Fore.YELLOW}Nueva versión disponible: {latest}. Estás en {UPLOADER_VERSION}.")
+            else:
+                logger.info(f"{Fore.GREEN}Uploader actualizado ({UPLOADER_VERSION}).")
+        except Exception as e:
+            logger.info(f"No se pudo verificar versión más reciente: {e}")
+
+    def _consume_force_full_flag(self) -> Tuple[bool, str]:
+        if self._force_full_roster.is_set():
+            self._force_full_roster.clear()
+            return True, self._force_reason
+        return False, ""
+
+    def _print_health_panel(self):
+        panel = [
+            "=== HEALTH PANEL ===",
+            f"Último parse OK: {self.health.get('last_parse_ok') or 'pendiente'}",
+            f"Último upload OK: {self.health.get('last_upload_ok') or 'pendiente'}",
+            f"Latencia al server: {self.health.get('last_latency_ms') or 's/d'} ms",
+            f"Tamaño payload: {self.health.get('last_payload_size') or 's/d'} bytes",
+            f"Versión: {self.health.get('version')}",
+        ]
+        logger.info(" | ".join(panel))
+        self.ui.update(self._is_wow_running(), self.health, self.config.wow_addon_path)
+
+    # =========================
+    # Procesamiento principal
+    # =========================
+    def process_file(self):
+        """
+        Lee SavedVariables, unifica datos y sincroniza:
+          - Web API (stats incremental + roster/chat por lotes)
+        """
+        try:
+            logger.info(f"{Fore.BLUE}Leyendo datos...")
+            with open(self.config.wow_addon_path, 'r', encoding='utf-8', errors='replace') as f:
+                content = f.read()
+            if not content.strip():
+                return
+
+            table_text = self._extract_lua_table(content)
+            if not table_text:
+                logger.error("No se pudo extraer la tabla LUA del archivo.")
+                return
+
+            try:
+                data = self.lua_parser.decode(table_text)
+            except Exception as e:
+                logger.error(f"Error decodificando LUA con SLPP: {e}")
+                return
+
+            if not isinstance(data, dict):
+                logger.error("El contenido LUA no decodificó a un diccionario.")
+                return
+
+            self.health["last_parse_ok"] = datetime.now().isoformat()
+
+            # =================================================================
+            # PASO 1: PROCESAMIENTO UNIFICADO DE DATOS
+            # =================================================================
+            processed_data, active_count = self._process_and_merge_data(data)
+            if not processed_data:
                 logger.warning(f"{Fore.MAGENTA}⚠ Procesamiento devolvió vacío. Saltando ciclo.")
                 return
 
@@ -837,7 +781,6 @@ class GuildActivityBridge:
         except Exception as e:
             logger.error(f"Error procesando archivo: {e}", exc_info=True)
         finally:
-            self.ui.enable_send_button()
             self._print_health_panel()
 
     # =========================
@@ -863,7 +806,649 @@ class GuildActivityBridge:
         return table
 
     # =========================
-@@ -1448,96 +1836,107 @@ class GuildActivityBridge:
+    # Normalización de nombres
+    # =========================
+    def _infer_default_realm(self, raw_roster: Dict[str, Any], raw_activity: Dict[str, Any]) -> str:
+        """
+        Si no viene por env, inferimos el reino más común de data.lua (chat),
+        y como fallback el más común del roster (si trae guiones).
+        """
+        if self.config.default_realm:
+            return self.config.default_realm
+
+        realm_counts: Dict[str, int] = {}
+
+        def bump(full: str):
+            if "-" in full:
+                realm = full.split("-", 1)[1].replace(" ", "")
+                if realm:
+                    realm_counts[realm] = realm_counts.get(realm, 0) + 1
+
+        for k in raw_activity.keys():
+            bump(str(k))
+        for k in raw_roster.keys():
+            bump(str(k))
+
+        if realm_counts:
+            best = sorted(realm_counts.items(), key=lambda x: (-x[1], x[0]))[0][0]
+            return best
+
+        return "Unknown"
+
+    def _canonicalize_player_key(self, name: str, default_realm: str) -> str:
+        """
+        Convierte 'Nombre' -> 'Nombre-DefaultRealm' si no tiene guion.
+        """
+        n = (name or "").strip()
+        if not n:
+            return n
+        if "-" in n:
+            return n
+        if not default_realm:
+            return n
+        return f"{n}-{default_realm}"
+
+    def _short_name(self, full: str) -> str:
+        return (full or "").split("-", 1)[0]
+
+    def _build_roster_snapshot(self, roster_members: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+        snapshot: Dict[str, Dict[str, Any]] = {}
+        for name, info in roster_members.items():
+            if not isinstance(info, dict):
+                continue
+            snapshot[name] = {
+                "rank": info.get("rank", "Member"),
+                "lvl": int(info.get("level", 0) or 0),
+                "class": info.get("class", "UNKNOWN"),
+                "lastSeenTS": int(info.get("lastSeenTS", 0) or 0),
+                "lastMessage": info.get("lastMessage", ""),
+            }
+        return snapshot
+
+    def _compute_roster_delta(self, roster_members: Dict[str, Any]):
+        prev = self.state.roster_snapshot or {}
+        current_snapshot = self._build_roster_snapshot(roster_members)
+
+        added: Dict[str, Dict[str, Any]] = {}
+        updated: Dict[str, Dict[str, Any]] = {}
+        removed: List[str] = []
+
+        for name, info in current_snapshot.items():
+            if name not in prev:
+                added[name] = roster_members.get(name, info)
+            elif info != prev.get(name, {}):
+                updated[name] = roster_members.get(name, info)
+
+        for name in prev.keys():
+            if name not in current_snapshot:
+                removed.append(name)
+
+        return added, updated, removed
+
+    def _find_chat_entry_for_roster_member(
+        self,
+        roster_key: str,
+        canonical_key: str,
+        raw_activity: Dict[str, Any],
+        default_realm: str,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Intenta encontrar la entrada de chat correcta cuando:
+          - roster: "Orphelo"
+          - chat:   "Orphelo-QuelThalas"
+        con manejo de ambigüedad (múltiples realms).
+        """
+        # 1) match exacto por canonical
+        if canonical_key in raw_activity and isinstance(raw_activity[canonical_key], dict):
+            return raw_activity[canonical_key]
+
+        # 2) match exacto por roster_key
+        if roster_key in raw_activity and isinstance(raw_activity[roster_key], dict):
+            return raw_activity[roster_key]
+
+        short = self._short_name(canonical_key)
+
+        # 3) match por short key (huérfano)
+        if short in raw_activity and isinstance(raw_activity[short], dict):
+            # cuidado: puede ser ambiguo (varios realms). Si hay más de uno, no usar.
+            candidates = [k for k in raw_activity.keys() if str(k).startswith(short + "-")]
+            if len(candidates) == 0:
+                return raw_activity[short]
+            # si hay varios con realm, preferimos canonical si coincide (ya se intentó), si no, ambiguo.
+            return None
+
+        # 4) match por "short-ALGUNREALM" si existe solo uno
+        candidates = []
+        for k, v in raw_activity.items():
+            ks = str(k)
+            if ks.startswith(short + "-") and isinstance(v, dict):
+                candidates.append((ks, v))
+
+        if len(candidates) == 1:
+            return candidates[0][1]
+
+        # 5) si hay múltiples, elegimos por lastSeenTS más reciente
+        if len(candidates) > 1:
+            def ts_of(entry: Dict[str, Any]) -> int:
+                try:
+                    return int(entry.get("lastSeenTS", 0) or 0)
+                except Exception:
+                    return 0
+            candidates.sort(key=lambda kv: ts_of(kv[1]), reverse=True)
+            # Aun así, si realmente hay multi "mismo nombre" en distintos realms,
+            # esto puede mapear mal. Preferimos NO tocar (retorna None) si diferencias chicas.
+            top_ts = ts_of(candidates[0][1])
+            second_ts = ts_of(candidates[1][1])
+            if top_ts and second_ts and abs(top_ts - second_ts) < 60:
+                return None
+            return candidates[0][1]
+
+        return None
+
+    # =========================
+    # PASO 1: Unificación data (Roster + Chat + Stats)
+    # =========================
+    def _process_and_merge_data(self, lua_data: Dict) -> Tuple[Optional[Dict], int]:
+        """
+        Construye:
+          processed_data = {
+            "members": { canonicalName: {...} },          # UNION roster + chat (para Sheets)
+            "roster_members": { canonicalName: {...} },   # Solo roster (para Web, roster real)
+            "stats": [ {iso, ts, onlineCount, online}, ... ],
+            "mythic": {...}
+          }
+        """
+        raw_roster = lua_data.get('roster', {}) or {}
+        raw_activity = lua_data.get('data', {}) or {}
+        raw_stats = lua_data.get('stats', []) or []
+        raw_mythic = lua_data.get('mythic', {}) or {}
+
+        if not isinstance(raw_roster, dict):
+            raw_roster = {}
+        if not isinstance(raw_activity, dict):
+            raw_activity = {}
+        # stats puede ser list o dict
+        if not isinstance(raw_stats, (list, dict)):
+            raw_stats = []
+
+        default_realm = self._infer_default_realm(raw_roster, raw_activity)
+
+        if len(raw_roster) < max(0, self.config.min_roster_size):
+            return None, 0
+
+        logger.info(f"Procesando {len(raw_roster)} miembros (Normalizando realm='{default_realm}')...")
+
+        roster_members: Dict[str, Dict[str, Any]] = {}
+
+        # 1) Construimos roster canonical
+        for roster_key, roster_info in raw_roster.items():
+            rk = str(roster_key)
+            ck = self._canonicalize_player_key(rk, default_realm)
+
+            if not isinstance(roster_info, dict):
+                roster_info = {}
+
+            entry = roster_members.get(ck) or {
+                "rank": "Desconocido",
+                "level": 80,
+                "class": "UNKNOWN",
+                "is_online": False,
+
+                # Chat defaults
+                "rankIndex": 99,
+                "rankName": "—",
+                "total": 0,
+                "daily": {},
+                "lastSeen": "",
+                "lastSeenTS": 0,
+                "lastMessage": ""
+            }
+
+            # Preferimos datos del roster oficial
+            entry["rank"] = roster_info.get("rank", entry.get("rank", "Desconocido")) or entry.get("rank", "Desconocido")
+            entry["level"] = int(roster_info.get("level", entry.get("level", 80)) or 0) or entry.get("level", 80)
+            entry["class"] = roster_info.get("class", entry.get("class", "UNKNOWN")) or entry.get("class", "UNKNOWN")
+            entry["is_online"] = bool(roster_info.get("is_online", entry.get("is_online", False)))
+
+            roster_members[ck] = entry
+
+        # 2) Unimos chat dentro del roster canonical
+        for canonical_name, member_entry in roster_members.items():
+            roster_key_guess = self._short_name(canonical_name)  # por compat
+            chat_data = self._find_chat_entry_for_roster_member(
+                roster_key=roster_key_guess,
+                canonical_key=canonical_name,
+                raw_activity=raw_activity,
+                default_realm=default_realm,
+            )
+
+            if chat_data:
+                try:
+                    member_entry["total"] = int(chat_data.get("total", member_entry.get("total", 0)) or 0)
+                except Exception:
+                    pass
+                if isinstance(chat_data.get("daily"), dict):
+                    member_entry["daily"] = chat_data.get("daily", {}) or {}
+                member_entry["lastMessage"] = str(chat_data.get("lastMessage", member_entry.get("lastMessage", "")) or "")
+
+                # rank de chat (si existe)
+                rn = chat_data.get("rankName")
+                if rn and rn != "—":
+                    member_entry["rankName"] = rn
+                    try:
+                        member_entry["rankIndex"] = int(chat_data.get("rankIndex", 99) or 99)
+                    except Exception:
+                        member_entry["rankIndex"] = 99
+
+                # timestamps
+                try:
+                    ts = int(chat_data.get("lastSeenTS", 0) or 0)
+                except Exception:
+                    ts = 0
+                if ts > 0:
+                    member_entry["lastSeenTS"] = ts
+                    member_entry["lastSeen"] = str(chat_data.get("lastSeen", "") or "")
+
+        # 3) CHAT ORPHANS (no roster) -> para Sheets (no para web roster)
+        chat_only_members: Dict[str, Dict[str, Any]] = {}
+        for raw_name, chat_data in raw_activity.items():
+            if not isinstance(chat_data, dict):
+                continue
+            rn = str(raw_name)
+            ck = self._canonicalize_player_key(rn, default_realm)
+
+            if ck in roster_members:
+                continue
+
+            # entry mínimo para no perder data
+            entry = {
+                "rank": str(chat_data.get("rankName", "Former") or "Former"),
+                "level": 0,
+                "class": "UNKNOWN",
+                "is_online": False,
+                "rankIndex": int(chat_data.get("rankIndex", 99) or 99),
+                "rankName": str(chat_data.get("rankName", "—") or "—"),
+                "total": int(chat_data.get("total", 0) or 0),
+                "daily": chat_data.get("daily", {}) if isinstance(chat_data.get("daily"), dict) else {},
+                "lastSeen": str(chat_data.get("lastSeen", "") or ""),
+                "lastSeenTS": int(chat_data.get("lastSeenTS", 0) or 0),
+                "lastMessage": str(chat_data.get("lastMessage", "") or ""),
+            }
+            chat_only_members[ck] = entry
+
+        # 4) Normalizar stats a formato esperado por Web + Sheets
+        stats_list = self._normalize_stats(raw_stats, default_realm)
+
+        # 5) Unir members para Sheets
+        union_members = dict(roster_members)
+        for ck, v in chat_only_members.items():
+            if ck not in union_members:
+                union_members[ck] = v
+
+        processed = {
+            "members": union_members,
+            "roster_members": roster_members,
+            "stats": stats_list,
+            "mythic": raw_mythic if isinstance(raw_mythic, dict) else {},
+            "meta": {"defaultRealm": default_realm}
+        }
+        return processed, len(roster_members)
+
+    def _normalize_stats(self, raw_stats: Any, default_realm: str) -> List[Dict[str, Any]]:
+        """
+        Normaliza stats desde SavedVariables.
+
+        Formatos encontrados en la vida real:
+          1) Lista (ideal): [{iso, ts, onlineCount?, online={...}}, ...]
+          2) Tabla-array pero SLPP la decodifica como dict {1: {...}, 2: {...}, ...}
+          3) Legacy dict {ts: onlineCount} o {ts: {onlineCount, online, ...}}
+
+        Retorna lista normalizada con "online" SOLO en el último snapshot (reduce peso).
+        """
+        out: List[Dict[str, Any]] = []
+
+        # --- Caso: dict ---
+        if isinstance(raw_stats, dict):
+            values = list(raw_stats.values())
+
+            # 2) SLPP array-as-dict: {1: {ts..}, 2: {ts..}}
+            if values and all(isinstance(v, dict) for v in values):
+                items = list(raw_stats.items())
+
+                def key_as_int(k: Any) -> Optional[int]:
+                    try:
+                        return int(k)
+                    except Exception:
+                        return None
+
+                if all(key_as_int(k) is not None for k, _ in items):
+                    items.sort(key=lambda kv: key_as_int(kv[0]) or 0)
+                    snaps = [kv[1] for kv in items]
+                else:
+                    def ts_of(s: Dict[str, Any]) -> int:
+                        try:
+                            return int(s.get("ts", 0) or 0)
+                        except Exception:
+                            return 0
+                    snaps = sorted(values, key=ts_of)
+
+                # Reusar lógica de lista
+                return self._normalize_stats(snaps, default_realm)
+
+            # 3) Legacy mapping: {ts: count} o {ts: {onlineCount/online}}
+            pairs: List[Tuple[int, Any]] = []
+            for k, v in raw_stats.items():
+                try:
+                    ts = int(k)
+                except Exception:
+                    continue
+                pairs.append((ts, v))
+
+            pairs.sort(key=lambda x: x[0])
+
+            for ts, v in pairs:
+                iso = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+                count_val = 0
+                if isinstance(v, dict):
+                    # puede ser snapshot dict
+                    oc = v.get("onlineCount")
+                    if oc is None:
+                        online = v.get("online", {}) or {}
+                        count_val = len(online) if isinstance(online, dict) else 0
+                    else:
+                        try:
+                            count_val = int(oc or 0)
+                        except Exception:
+                            count_val = 0
+                else:
+                    try:
+                        count_val = int(v or 0)
+                    except Exception:
+                        count_val = 0
+
+                out.append({"iso": iso, "ts": ts, "onlineCount": int(count_val), "online": {}})
+
+            return out
+
+        # --- Caso: lista ---
+        if isinstance(raw_stats, list):
+            snaps = [s for s in raw_stats if isinstance(s, dict)]
+
+            def ts_of(s: Dict[str, Any]) -> int:
+                try:
+                    return int(s.get("ts", 0) or 0)
+                except Exception:
+                    return 0
+
+            snaps.sort(key=ts_of)
+            if not snaps:
+                return []
+
+            last_ts = ts_of(snaps[-1])
+
+            for snap in snaps:
+                ts = ts_of(snap)
+                iso = snap.get("iso")
+                if not iso and ts:
+                    iso = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+                online_count = snap.get("onlineCount")
+                if online_count is None:
+                    try:
+                        online_count = len(snap.get("online", {}) or {})
+                    except Exception:
+                        online_count = 0
+
+                # Reducimos peso: online {} en todos menos el último snapshot
+                online_payload: Dict[str, Any] = {}
+                if ts == last_ts:
+                    online = snap.get("online", {}) or {}
+                    if isinstance(online, dict):
+                        for name, info in online.items():
+                            if not isinstance(info, dict):
+                                continue
+                            online_payload[self._canonicalize_player_key(str(name), default_realm)] = {
+                                "class": info.get("class", "UNKNOWN"),
+                                "level": int(info.get("level", 80) or 80),
+                                "rank": info.get("rank", "Member"),
+                            }
+
+                out.append({
+                    "iso": str(iso or ""),
+                    "ts": ts,
+                    "onlineCount": int(online_count or 0),
+                    "online": online_payload
+                })
+
+            return out
+
+        return out
+
+    # =========================
+    # WEB UPLOADER (Robusto)
+    # =========================
+    def _upload_stats_incremental_to_web(self, stats_list: List[Dict[str, Any]], upload_session_id: str):
+        """
+        Sube SOLO snapshots nuevos (ts > last_uploaded_stats_ts) para evitar duplicados en la DB web.
+        Además, reduce peso: online={} excepto en el último snapshot del lote.
+        """
+        try:
+            if not stats_list:
+                return
+
+            # Filtrar nuevos
+            new_snaps = [s for s in stats_list if isinstance(s, dict) and int(s.get("ts", 0) or 0) > self.state.last_uploaded_stats_ts]
+            if not new_snaps:
+                return
+
+            # Orden por ts
+            new_snaps.sort(key=lambda s: int(s.get("ts", 0) or 0))
+
+            logger.info(f"{Fore.YELLOW}Subiendo {len(new_snaps)} snapshots nuevos a Web (incremental stats)...")
+
+            # Chunk por seguridad
+            batch_size = max(10, self.config.stats_batch_size)
+            for i in range(0, len(new_snaps), batch_size):
+                chunk = new_snaps[i:i + batch_size]
+                # Solo el último snapshot del chunk lleva online; los demás vacíos
+                for j in range(len(chunk) - 1):
+                    chunk[j]["online"] = {}
+
+                payload = {
+                    # IMPORTANTE: el backend requiere upload_session_id (string). Usamos el mismo de roster.
+                    "upload_session_id": upload_session_id,
+                    "is_final_batch": False,  # NO cerramos sesión aquí; la cierra el último batch de roster.
+                    "batch_index": int(i // batch_size) + 1,
+                    "total_batches": int(math.ceil(len(new_snaps) / batch_size)),
+                    # compat camelCase (si algún código viejo lo usaba)
+                    "uploadSessionId": upload_session_id,
+                    "isFinalBatch": False,
+                    "batchIndex": int(i // batch_size) + 1,
+                    "totalBatches": int(math.ceil(len(new_snaps) / batch_size)),
+                    "stats": chunk,
+                }
+                self._post_to_web_with_retry(payload, purpose=f"stats {i//batch_size+1}/{math.ceil(len(new_snaps)/batch_size)}")
+
+            # Actualizar estado: último ts subido
+            self.state.last_uploaded_stats_ts = int(new_snaps[-1].get("ts", self.state.last_uploaded_stats_ts) or self.state.last_uploaded_stats_ts)
+            self._save_state()
+
+        except Exception as e:
+            logger.error(f"{Fore.RED}Error stats incremental web: {e}", exc_info=True)
+            # NO abortamos el resto; roster/chat se puede subir igual.
+
+    def _upload_chunked_to_web(self, processed_data: Dict, upload_session_id: str, force_full: bool = False, force_reason: str = ""):
+        """
+        Mantiene el nombre del método del V42, pero:
+          - usa snake_case que el backend espera, y también camelCase por compat
+          - NO manda stats en cada batch (eso duplicaba snapshots y engordaba payload)
+          - reintentos fuertes + auto-reducción por 413
+        """
+        if not self.config.enable_web_upload:
+            return
+
+        roster_members = processed_data.get("roster_members") or processed_data.get("members") or {}
+        if not isinstance(roster_members, dict) or not roster_members:
+            logger.warning("No roster_members para subir a Web.")
+            return
+
+        added, updated, removed = self._compute_roster_delta(roster_members)
+        roster_mode = "delta"
+        roster_reason = "delta"
+        if force_full:
+            roster_members = roster_members
+            roster_mode = "full"
+            roster_reason = force_reason or "full"
+            logger.info(f"{Fore.CYAN}Envío completo de roster solicitado ({force_reason or 'manual'}). {len(roster_members)} miembros se enviarán en pleno.")
+        elif added or updated or removed:
+            roster_members = {**added, **updated}
+            logger.info(f"{Fore.CYAN}Delta roster -> added: {len(added)}, updated: {len(updated)}, removed: {len(removed)}")
+        else:
+            roster_mode = "no_change"
+            roster_reason = "no_change"
+            summary_payload = {
+                "upload_session_id": upload_session_id,
+                "is_final_batch": True,
+                "batch_index": 1,
+                "total_batches": 1,
+                "removed_members": [],
+                "uploadSessionId": upload_session_id,
+                "isFinalBatch": True,
+                "batchIndex": 1,
+                "totalBatches": 1,
+                "removedMembers": [],
+                "master_roster": {},
+                "data": {},
+                "roster_mode": roster_mode,
+                "roster_summary": {
+                    "mode": roster_mode,
+                    "added": 0,
+                    "updated": 0,
+                    "removed": 0,
+                    "total_members": len(roster_members),
+                    "reason": roster_reason,
+                },
+                "rosterMode": roster_mode,
+                "rosterSummary": {
+                    "mode": roster_mode,
+                    "added": 0,
+                    "updated": 0,
+                    "removed": 0,
+                    "totalMembers": len(roster_members),
+                    "reason": roster_reason,
+                },
+            }
+            self._post_to_web_with_retry(summary_payload, purpose="roster no-change heartbeat")
+            self.state.roster_snapshot = self._build_roster_snapshot(processed_data.get("roster_members") or processed_data.get("members") or {})
+            self._save_state()
+            logger.info(f"{Fore.CYAN}No hay cambios en roster/chat. Se envió heartbeat de estado al sitio.")
+            return
+
+        all_keys = list(roster_members.keys())
+        total_members = len(all_keys)
+
+        batch_size = max(10, int(self.config.batch_size))
+        session_id = upload_session_id
+
+        logger.info(f"{Fore.YELLOW}Iniciando Upload Web Roster/Chat (ID: {session_id}) - miembros: {total_members}, batch: {batch_size}")
+
+        # Payload builder
+        def build_payload(batch_keys: List[str], batch_index: int, total_batches: int, is_final: bool) -> Dict[str, Any]:
+            master_roster = {}
+            chat_data = {}
+
+            for name in batch_keys:
+                info = roster_members.get(name, {}) if isinstance(roster_members.get(name, {}), dict) else {}
+                master_roster[name] = {
+                    "rank": info.get("rank", "Member"),
+                    "lvl": int(info.get("level", 80) or 80),
+                    "class": info.get("class", "UNKNOWN"),
+                }
+
+                # Chat entry (solo si hay algo)
+                total = int(info.get("total", 0) or 0)
+                ts = int(info.get("lastSeenTS", 0) or 0)
+                last_msg = str(info.get("lastMessage", "") or "")
+                rank_name = info.get("rankName") if info.get("rankName") and info.get("rankName") != "—" else info.get("rank")
+
+                if total > 0 or ts > 0 or last_msg:
+                    # backend usa lastSeenTS (segundos)
+                    # lastSeen: mejor ISO para que JS Date lo parsee bien (aunque backend prioriza TS)
+                    last_seen_iso = ""
+                    if ts > 0:
+                        last_seen_iso = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+                    chat_data[name] = {
+                        "total": total,
+                        "rankName": rank_name or "Member",
+                        "lastMessage": last_msg,
+                        "lastSeenTS": ts,
+                        "lastSeen": last_seen_iso,
+                    }
+
+                payload = {
+                    # snake_case (backend)
+                    "upload_session_id": session_id,
+                    "is_final_batch": bool(is_final),
+                    "batch_index": int(batch_index),
+                    "total_batches": int(total_batches),
+                    "removed_members": removed if is_final and roster_mode in ("delta", "full") else [],
+                    "roster_mode": roster_mode,
+                    "roster_summary": {
+                        "mode": roster_mode,
+                        "added": len(added) if roster_mode in ("delta", "full") else 0,
+                        "updated": len(updated) if roster_mode in ("delta", "full") else 0,
+                        "removed": len(removed) if roster_mode in ("delta", "full") else 0,
+                        "total_members": len(processed_data.get("roster_members") or processed_data.get("members") or {}),
+                        "reason": roster_reason,
+                    },
+
+                    # camelCase (por si tu backend viejo lo usaba)
+                    "uploadSessionId": session_id,
+                    "isFinalBatch": bool(is_final),
+                    "batchIndex": int(batch_index),
+                    "totalBatches": int(total_batches),
+                    "removedMembers": removed if is_final and roster_mode in ("delta", "full") else [],
+                    "rosterMode": roster_mode,
+                    "rosterSummary": {
+                        "mode": roster_mode,
+                        "added": len(added) if roster_mode in ("delta", "full") else 0,
+                        "updated": len(updated) if roster_mode in ("delta", "full") else 0,
+                        "removed": len(removed) if roster_mode in ("delta", "full") else 0,
+                        "totalMembers": len(processed_data.get("roster_members") or processed_data.get("members") or {}),
+                        "reason": roster_reason,
+                    },
+
+                    "master_roster": master_roster,
+                    "data": chat_data,
+                    "has_changes": roster_mode in ("delta", "full"),
+                    # stats NO aquí (se sube separado / incremental)
+                }
+            return payload
+
+        # Upload loop con auto-ajuste 413
+        idx = 0
+        batch_index = 1
+        total_batches = math.ceil(total_members / batch_size)
+
+        while idx < total_members:
+            batch_keys = all_keys[idx: idx + batch_size]
+            is_final = (idx + batch_size) >= total_members
+            payload = build_payload(batch_keys, batch_index, total_batches, is_final)
+
+            try:
+                self._post_to_web_with_retry(payload, purpose=f"roster batch {batch_index}/{total_batches} ({len(batch_keys)})")
+                idx += batch_size
+                batch_index += 1
+                time.sleep(0.35)
+            except _TooLarge413:
+                # reducir batch y recalcular
+                if batch_size <= 10:
+                    logger.error(f"{Fore.RED}✘ 413 incluso con batch_size=10. Revisa límite en backend o reduce data.")
+                    raise
+                new_batch = max(10, batch_size // 2)
+                logger.warning(f"{Fore.RED}Recibimos 413. Reduciendo batch_size {batch_size} -> {new_batch} y reintentando desde el mismo punto.")
                 batch_size = new_batch
                 total_batches = math.ceil(total_members / batch_size)
                 # NO avanzamos idx; reintentamos mismo lote con batch más chico.
@@ -889,68 +1474,57 @@ class GuildActivityBridge:
         attempt = 0
         max_attempts_before_queue = 5
 
-        self.health["uploading"] = True
-        self.ui.notify_uploading(True)
-        try:
-            while True:
-                attempt += 1
-                try:
-                    start = time.time()
-                    resp = self._session.post(url, json=payload, headers=headers, timeout=self.config.http_timeout)
-                    elapsed_ms = int((time.time() - start) * 1000)
-                    self.health["last_latency_ms"] = elapsed_ms
-                    self.health["last_payload_size"] = len(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
+        while True:
+            attempt += 1
+            try:
+                start = time.time()
+                resp = self._session.post(url, json=payload, headers=headers, timeout=self.config.http_timeout)
+                elapsed_ms = int((time.time() - start) * 1000)
+                self.health["last_latency_ms"] = elapsed_ms
+                self.health["last_payload_size"] = len(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
 
-                    if resp.status_code == 200:
-                        self.health["last_upload_ok"] = datetime.now().isoformat()
-                        self.health["last_error"] = None
-                        return
+                if resp.status_code == 200:
+                    self.health["last_upload_ok"] = datetime.now().isoformat()
+                    return
 
-                    if resp.status_code == 413:
-                        raise _TooLarge413()
+                if resp.status_code == 413:
+                    raise _TooLarge413()
 
-                    # auth problems -> no tiene sentido reintentar infinito
-                    if resp.status_code in (401, 403):
-                        logger.error(f"{Fore.RED}Web auth error ({resp.status_code}) en {purpose}. Revisa WEB_API_KEY / settings del sitio.")
-                        self.health["last_error"] = f"Auth {resp.status_code}"
-                        raise RuntimeError(f"Web auth error {resp.status_code}")
+                # auth problems -> no tiene sentido reintentar infinito
+                if resp.status_code in (401, 403):
+                    logger.error(f"{Fore.RED}Web auth error ({resp.status_code}) en {purpose}. Revisa WEB_API_KEY / settings del sitio.")
+                    raise RuntimeError(f"Web auth error {resp.status_code}")
 
-                    # zod validation / bad request
-                    if resp.status_code in (400, 422):
-                        try:
-                            details = resp.json()
-                        except Exception:
-                            details = resp.text[:400]
-                        logger.error(f"{Fore.RED}Web validation error {resp.status_code} en {purpose}: {details}")
-                        self.health["last_error"] = f"400/422 {details}"
-                        raise RuntimeError(f"Web validation error {resp.status_code}")
+                # zod validation / bad request
+                if resp.status_code in (400, 422):
+                    try:
+                        details = resp.json()
+                    except Exception:
+                        details = resp.text[:400]
+                    logger.error(f"{Fore.RED}Web validation error {resp.status_code} en {purpose}: {details}")
+                    raise RuntimeError(f"Web validation error {resp.status_code}")
 
-                    # 429/5xx/etc: reintentar
-                    logger.warning(f"{Fore.YELLOW}Web error {resp.status_code} en {purpose}. Intento {attempt}. Backoff {backoff:.1f}s")
-                    if allow_queue and attempt >= max_attempts_before_queue:
-                        self.local_queue.enqueue(payload, purpose)
-                        logger.warning(f"{Fore.MAGENTA}Persisten errores de server ({resp.status_code}). Payload en cola local.")
-                        return
-                    time.sleep(backoff)
-                    backoff = min(max_backoff, backoff * 1.6)
-                    continue
+                # 429/5xx/etc: reintentar
+                logger.warning(f"{Fore.YELLOW}Web error {resp.status_code} en {purpose}. Intento {attempt}. Backoff {backoff:.1f}s")
+                if allow_queue and attempt >= max_attempts_before_queue:
+                    self.local_queue.enqueue(payload, purpose)
+                    logger.warning(f"{Fore.MAGENTA}Persisten errores de server ({resp.status_code}). Payload en cola local.")
+                    return
+                time.sleep(backoff)
+                backoff = min(max_backoff, backoff * 1.6)
+                continue
 
-                except _TooLarge413:
-                    raise
-                except requests.RequestException as e:
-                    logger.warning(f"{Fore.YELLOW}Web conexión falló en {purpose}: {e}. Intento {attempt}. Backoff {backoff:.1f}s")
-                    self.health["last_error"] = str(e)
-                    if allow_queue and attempt >= max_attempts_before_queue:
-                        self.local_queue.enqueue(payload, purpose)
-                        logger.warning(f"{Fore.MAGENTA}No hay conexión estable ({purpose}). Payload guardado en cola local para reintento.")
-                        return
-                    time.sleep(backoff)
-                    backoff = min(max_backoff, backoff * 1.6)
-                    continue
-        finally:
-            self.health["uploading"] = False
-            self.ui.notify_uploading(False)
-            self.ui.enable_send_button()
+            except _TooLarge413:
+                raise
+            except requests.RequestException as e:
+                logger.warning(f"{Fore.YELLOW}Web conexión falló en {purpose}: {e}. Intento {attempt}. Backoff {backoff:.1f}s")
+                if allow_queue and attempt >= max_attempts_before_queue:
+                    self.local_queue.enqueue(payload, purpose)
+                    logger.warning(f"{Fore.MAGENTA}No hay conexión estable ({purpose}). Payload guardado en cola local para reintento.")
+                    return
+                time.sleep(backoff)
+                backoff = min(max_backoff, backoff * 1.6)
+                continue
 
 
 class _TooLarge413(Exception):
