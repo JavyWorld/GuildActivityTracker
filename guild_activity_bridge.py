@@ -1295,15 +1295,18 @@ class GuildActivityBridge:
 
         added, updated, removed = self._compute_roster_delta(roster_members)
         roster_mode = "delta"
+        roster_reason = "delta"
         if force_full:
             roster_members = roster_members
             roster_mode = "full"
+            roster_reason = force_reason or "full"
             logger.info(f"{Fore.CYAN}Envío completo de roster solicitado ({force_reason or 'manual'}). {len(roster_members)} miembros se enviarán en pleno.")
         elif added or updated or removed:
             roster_members = {**added, **updated}
             logger.info(f"{Fore.CYAN}Delta roster -> added: {len(added)}, updated: {len(updated)}, removed: {len(removed)}")
         else:
             roster_mode = "no_change"
+            roster_reason = "no_change"
             summary_payload = {
                 "upload_session_id": upload_session_id,
                 "is_final_batch": True,
@@ -1324,7 +1327,7 @@ class GuildActivityBridge:
                     "updated": 0,
                     "removed": 0,
                     "total_members": len(roster_members),
-                    "reason": "sin cambios desde último snapshot",
+                    "reason": roster_reason,
                 },
                 "rosterMode": roster_mode,
                 "rosterSummary": {
@@ -1333,7 +1336,7 @@ class GuildActivityBridge:
                     "updated": 0,
                     "removed": 0,
                     "totalMembers": len(roster_members),
-                    "reason": "sin cambios desde último snapshot",
+                    "reason": roster_reason,
                 },
             }
             self._post_to_web_with_retry(summary_payload, purpose="roster no-change heartbeat")
@@ -1398,7 +1401,7 @@ class GuildActivityBridge:
                         "updated": len(updated) if roster_mode in ("delta", "full") else 0,
                         "removed": len(removed) if roster_mode in ("delta", "full") else 0,
                         "total_members": len(processed_data.get("roster_members") or processed_data.get("members") or {}),
-                        "reason": force_reason if roster_mode == "full" else "delta",
+                        "reason": roster_reason,
                     },
 
                     # camelCase (por si tu backend viejo lo usaba)
@@ -1414,11 +1417,12 @@ class GuildActivityBridge:
                         "updated": len(updated) if roster_mode in ("delta", "full") else 0,
                         "removed": len(removed) if roster_mode in ("delta", "full") else 0,
                         "totalMembers": len(processed_data.get("roster_members") or processed_data.get("members") or {}),
-                        "reason": force_reason if roster_mode == "full" else "delta",
+                        "reason": roster_reason,
                     },
 
                     "master_roster": master_roster,
                     "data": chat_data,
+                    "has_changes": roster_mode in ("delta", "full"),
                     # stats NO aquí (se sube separado / incremental)
                 }
             return payload
