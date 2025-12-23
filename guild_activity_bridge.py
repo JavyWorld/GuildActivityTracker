@@ -176,8 +176,8 @@ class Config:
         self.worksheet_mythic = os.getenv('GOOGLE_SHEET_WORKSHEET_MYTHIC', 'M+ Score')
 
         # WoW SavedVariables file path (GuildActivityTracker.lua)
-        raw_path = os.getenv('WOW_ADDON_PATH', '')
-        self.wow_addon_path = os.path.normpath(os.path.expandvars(raw_path))
+        raw_path = os.getenv('WOW_ADDON_PATH', '').strip()
+        self.wow_addon_path = os.path.normpath(os.path.expandvars(raw_path)) if raw_path else ""
 
         # Realm default para normalizar nombres (si el roster viene sin "-Reino")
         self.default_realm = os.getenv("GUILD_REALM", os.getenv("DEFAULT_REALM", "")).replace(" ", "")
@@ -204,7 +204,12 @@ class Config:
 
     def _validate(self):
         if not self.wow_addon_path or self.wow_addon_path == '.':
-            raise ValueError("Error en WOW_ADDON_PATH: está vacío o inválido.")
+            detected = self._auto_detect_wow_addon_path()
+            if detected:
+                self.wow_addon_path = detected
+                logger.info(f"{Fore.GREEN}Detectado GuildActivityTracker.lua en: {self.wow_addon_path}")
+            else:
+                raise ValueError("Error en WOW_ADDON_PATH: está vacío o inválido. Define la ruta en .env o como variable de entorno, o coloca GuildActivityTracker.lua en la ubicación estándar.")
 
         # Credenciales: mucha gente las guarda como 'credentials' sin extensión.
         if not os.path.isfile(self.credentials_path):
@@ -219,6 +224,48 @@ class Config:
         if not os.path.isfile(self.wow_addon_path):
             logger.warning(f"{Fore.YELLOW}AVISO: Archivo LUA no encontrado en {self.wow_addon_path}. "
                            f"El bridge quedará vigilando hasta que exista.")
+
+    def _auto_detect_wow_addon_path(self) -> str:
+        """
+        Busca GuildActivityTracker.lua en las rutas comunes de WoW para evitar fallar
+        cuando WOW_ADDON_PATH no está configurado. Devuelve la primera coincidencia.
+        """
+
+        candidates = []
+        home = os.path.expanduser("~")
+
+        def _add_base(base_root: str):
+            if base_root and base_root not in candidates:
+                candidates.append(base_root)
+
+        # Intentos más comunes
+        _add_base(os.path.join(home, "Documents", "World of Warcraft"))
+        _add_base(os.path.join(home, "World of Warcraft"))
+
+        if os.name == "nt":
+            userprofile = os.getenv("USERPROFILE", home)
+            _add_base(os.path.join(userprofile, "Documents", "World of Warcraft"))
+            _add_base(os.path.join(userprofile, "AppData", "Roaming", "World of Warcraft"))
+            _add_base(os.path.join(userprofile, "AppData", "Local", "World of Warcraft"))
+
+        flavors = ["", "_retail_", "_classic_", "_classic_era_", "_ptr_", "_beta_"]
+
+        for base in candidates:
+            for flavor in flavors:
+                wow_root = os.path.join(base, flavor) if flavor else base
+                account_root = os.path.join(wow_root, "WTF", "Account")
+                if not os.path.isdir(account_root):
+                    continue
+                try:
+                    for account in os.listdir(account_root):
+                        saved_vars = os.path.join(account_root, account, "SavedVariables")
+                        candidate_file = os.path.join(saved_vars, "GuildActivityTracker.lua")
+                        if os.path.isfile(candidate_file):
+                            return os.path.normpath(candidate_file)
+                except Exception:
+                    continue
+
+        return ""
 
 
 class GuildActivityBridge:
