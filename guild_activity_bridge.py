@@ -35,18 +35,13 @@ from dotenv import load_dotenv
 import colorama
 from colorama import Fore
 import slpp
+from bridge_ui import BridgeUI
 
 psutil_spec = importlib.util.find_spec("psutil")
 if psutil_spec:
     import psutil  # type: ignore
 else:
     psutil = None  # type: ignore
-
-tk_spec = importlib.util.find_spec("tkinter")
-if tk_spec:
-    import tkinter as tk  # type: ignore
-else:
-    tk = None  # type: ignore
 
 try:
     from zoneinfo import ZoneInfo  # py3.9+
@@ -149,6 +144,12 @@ class LocalUploadQueue:
             os.replace(tmp, self.path)
         except Exception as e:
             logger.warning(f"No pude reescribir cola local: {e}")
+
+    def pending_entries(self) -> int:
+        try:
+            return len(self.load_entries())
+        except Exception:
+            return 0
 
     def flush(self, sender):
         entries = self.load_entries()
@@ -363,147 +364,6 @@ class Config:
             print("No pude localizar GuildActivityTracker.lua en la ruta indicada. Verifica e intenta nuevamente.\n")
 
 
-class BridgeUI:
-    def __init__(self, enabled: bool, icon_path: str, on_full_roster: Optional[callable] = None, on_exit: Optional[callable] = None):
-        self.enabled = enabled and tk is not None
-        self.icon_path = icon_path
-        self.on_full_roster = on_full_roster
-        self.on_exit = on_exit
-        self.root: Optional[tk.Tk] = None if tk is None else (tk.Tk() if self.enabled else None)
-        self.queue: "queue.Queue[Dict[str, str]]" = queue.Queue()
-        self.labels: Dict[str, "tk.StringVar"] = {}
-
-        if not self.enabled or self.root is None:
-            if enabled and tk is None:
-                logger.info("Interfaz gráfica no disponible (tkinter no instalado). Usando modo consola.")
-            return
-
-        self.root.title("Guild Activity Tracker Bridge")
-        self.root.configure(bg="#0f172a")
-        self.root.geometry("540x310")
-        try:
-            if os.path.isfile(self.icon_path):
-                self.root.iconphoto(False, tk.PhotoImage(file=self.icon_path))
-        except Exception:
-            pass
-
-        header = tk.Label(
-            self.root,
-            text="Guild Activity Tracker Bridge",
-            bg="#0f172a",
-            fg="#facc15",
-            font=("Segoe UI", 14, "bold"),
-            anchor="w",
-            padx=10,
-            pady=6,
-        )
-        header.pack(fill="x")
-
-        fields = [
-            ("wow", "Estado WoW"),
-            ("watch", "Archivo vigilado"),
-            ("parse", "Último parse"),
-            ("upload", "Último upload"),
-            ("latency", "Latencia"),
-            ("payload", "Tamaño payload"),
-            ("version", "Versión"),
-        ]
-
-        for key, label in fields:
-            var = tk.StringVar(value=f"{label}: ...")
-            self.labels[key] = var
-            row = tk.Label(
-                self.root,
-                textvariable=var,
-                bg="#0f172a",
-                fg="#e5e7eb",
-                anchor="w",
-                justify="left",
-                font=("Segoe UI", 10),
-                padx=10,
-                pady=2,
-            )
-            row.pack(fill="x")
-
-        controls = tk.Frame(self.root, bg="#0f172a")
-        controls.pack(fill="x", pady=8)
-        tk.Button(
-            controls,
-            text="Enviar roster completo ahora",
-            command=self._request_full,
-            bg="#1e293b",
-            fg="#e5e7eb",
-            activebackground="#334155",
-            activeforeground="#facc15",
-            relief="groove",
-            padx=8,
-            pady=4,
-        ).pack(side="left", padx=10)
-
-        footer = tk.Label(
-            self.root,
-            text="Cierra esta ventana para salir del bridge.",
-            bg="#0f172a",
-            fg="#94a3b8",
-            anchor="w",
-            padx=10,
-            pady=8,
-            font=("Segoe UI", 9, "italic"),
-        )
-        footer.pack(fill="x", side="bottom")
-
-        self.root.protocol("WM_DELETE_WINDOW", self._handle_close)
-        self.root.after(400, self._drain_queue)
-
-    def _drain_queue(self):
-        try:
-            while not self.queue.empty():
-                update = self.queue.get_nowait()
-                self._apply(update)
-        finally:
-            if self.root is not None:
-                self.root.after(500, self._drain_queue)
-
-    def _apply(self, update: Dict[str, str]):
-        for key, var in self.labels.items():
-            if key in update:
-                var.set(update[key])
-
-    def _request_full(self):
-        if self.on_full_roster:
-            try:
-                self.on_full_roster()
-            except Exception:
-                pass
-
-    def _handle_close(self):
-        if self.on_exit:
-            try:
-                self.on_exit()
-            except Exception:
-                pass
-        if self.root is not None:
-            self.root.destroy()
-
-    def run(self):
-        if not self.enabled or self.root is None:
-            return
-        self.root.mainloop()
-
-    def update(self, wow_running: bool, health: Dict[str, Any], watch_path: str):
-        if not self.enabled:
-            return
-        status = {
-            "wow": f"Estado WoW: {'Detectado' if wow_running else 'No detectado'}",
-            "watch": f"Archivo vigilado: {watch_path}",
-            "parse": f"Último parse: {health.get('last_parse_ok') or 'pendiente'}",
-            "upload": f"Último upload: {health.get('last_upload_ok') or 'pendiente'}",
-            "latency": f"Latencia: {health.get('last_latency_ms') or 's/d'} ms",
-            "payload": f"Tamaño payload: {health.get('last_payload_size') or 's/d'} bytes",
-            "version": f"Versión: {health.get('version')}",
-        }
-        if self.root is not None:
-            self.queue.put(status)
 
 
 class GuildActivityBridge:
@@ -518,6 +378,9 @@ class GuildActivityBridge:
             "last_payload_size": None,
             "version": UPLOADER_VERSION,
         }
+        self._ui_activity = "En espera"
+        self._ui_progress = "--"
+        self._ui_queue_note = "vacía"
 
         self._session = requests.Session()
         self._session.headers.update({"X-API-Key": self.config.web_api_key, "Content-Type": "application/json"})
@@ -630,12 +493,14 @@ class GuildActivityBridge:
                         logger.info("World of Warcraft detectado. Activando monitoreo y cola local.")
                         self.local_queue.flush(self._post_to_web_with_retry)
                         self.last_mtime = 0
+                        self._set_ui_activity("WoW detectado: monitoreo activo", level="success")
                     else:
                         logger.info("World of Warcraft no está en ejecución. Esperando...")
+                        self._set_ui_activity("Esperando que World of Warcraft esté en ejecución")
                 last_wow_state = wow_running
 
                 if not wow_running:
-                    self.ui.update(False, self.health, self.config.wow_addon_path)
+                    self._refresh_ui(False)
                     time.sleep(self.config.poll_interval)
                     continue
 
@@ -652,8 +517,9 @@ class GuildActivityBridge:
                             logger.info(f"{Fore.CYAN}¡Cambio detectado! Esperando estabilización de archivo...")
                             self._wait_for_file_stable(self.config.wow_addon_path)
                         self.last_mtime = current_mtime
+                        self._set_ui_activity("Procesando SavedVariables", progress="Lectura de archivo")
                         self.process_file()
-                self.ui.update(True, self.health, self.config.wow_addon_path)
+                self._refresh_ui(True)
                 time.sleep(self.config.poll_interval)
             except KeyboardInterrupt:
                 logger.info("Cerrando bridge por KeyboardInterrupt.")
@@ -707,6 +573,32 @@ class GuildActivityBridge:
             return True, self._force_reason
         return False, ""
 
+    def _queue_status_note(self) -> str:
+        try:
+            pending = self.local_queue.pending_entries()
+            return f"{pending} pendiente(s)" if pending else "vacía"
+        except Exception:
+            return "desconocida"
+
+    def _set_ui_activity(self, message: str, progress: str = "--", level: str = "info"):
+        self._ui_activity = message
+        self._ui_progress = progress or "--"
+        self.ui.show_activity(message, progress=self._ui_progress)
+        self.ui.push_log(message, level=level)
+
+    def _refresh_ui(self, wow_running: Optional[bool] = None):
+        if wow_running is None:
+            wow_running = self._is_wow_running()
+        self._ui_queue_note = self._queue_status_note()
+        self.ui.update_status(
+            wow_running,
+            self.health,
+            self.config.wow_addon_path,
+            activity=self._ui_activity,
+            progress=self._ui_progress,
+            queue_note=self._ui_queue_note,
+        )
+
     def _print_health_panel(self):
         panel = [
             "=== HEALTH PANEL ===",
@@ -717,7 +609,7 @@ class GuildActivityBridge:
             f"Versión: {self.health.get('version')}",
         ]
         logger.info(" | ".join(panel))
-        self.ui.update(self._is_wow_running(), self.health, self.config.wow_addon_path)
+        self._refresh_ui(self._is_wow_running())
 
     # =========================
     # Procesamiento principal
@@ -729,6 +621,7 @@ class GuildActivityBridge:
         """
         try:
             logger.info(f"{Fore.BLUE}Leyendo datos...")
+            self._set_ui_activity("Leyendo SavedVariables", progress="Esperando datos")
             with open(self.config.wow_addon_path, 'r', encoding='utf-8', errors='replace') as f:
                 content = f.read()
             if not content.strip():
@@ -750,6 +643,7 @@ class GuildActivityBridge:
                 return
 
             self.health["last_parse_ok"] = datetime.now().isoformat()
+            self._set_ui_activity("Datos decodificados", progress="Unificando tablas")
 
             # =================================================================
             # PASO 1: PROCESAMIENTO UNIFICADO DE DATOS
@@ -764,24 +658,26 @@ class GuildActivityBridge:
             # PASO 2: WEB UPLOAD
             # =================================================================
             if self.config.enable_web_upload:
-                                self.local_queue.flush(self._post_to_web_with_retry)
-                                # Un solo Session ID para TODO en este ciclo (stats + roster/chat)
-                                web_session_id = self._make_upload_session_id()
-                                self.state.last_web_session_id = web_session_id
-                                self._save_state()
+                self._set_ui_activity("Preparando subida web", progress="Creando sesión")
+                self.local_queue.flush(self._post_to_web_with_retry)
+                # Un solo Session ID para TODO en este ciclo (stats + roster/chat)
+                web_session_id = self._make_upload_session_id()
+                self.state.last_web_session_id = web_session_id
+                self._save_state()
 
-                                # 3A) Stats incremental (para NO duplicar snapshots en la DB del sitio)
-                                if processed_data.get("stats") and self.config.enable_stats_incremental_web:
-                                    self._upload_stats_incremental_to_web(processed_data["stats"], web_session_id)
+                # 3A) Stats incremental (para NO duplicar snapshots en la DB del sitio)
+                if processed_data.get("stats") and self.config.enable_stats_incremental_web:
+                    self._upload_stats_incremental_to_web(processed_data["stats"], web_session_id)
 
-                                # 3B) Roster + chat por sesión en lotes (evita 413)
-                                self._upload_chunked_to_web(processed_data, web_session_id, *self._consume_force_full_flag())
+                # 3B) Roster + chat por sesión en lotes (evita 413)
+                self._upload_chunked_to_web(processed_data, web_session_id, *self._consume_force_full_flag())
 
 
         except Exception as e:
             logger.error(f"Error procesando archivo: {e}", exc_info=True)
         finally:
             self._print_health_panel()
+            self._set_ui_activity("En espera", progress="Monitoreando cambios")
 
     # =========================
     # LUA parsing helpers
@@ -1246,6 +1142,7 @@ class GuildActivityBridge:
             new_snaps.sort(key=lambda s: int(s.get("ts", 0) or 0))
 
             logger.info(f"{Fore.YELLOW}Subiendo {len(new_snaps)} snapshots nuevos a Web (incremental stats)...")
+            self._set_ui_activity("Subiendo snapshots", progress=f"{len(new_snaps)} pendientes")
 
             # Chunk por seguridad
             batch_size = max(10, self.config.stats_batch_size)
@@ -1268,6 +1165,10 @@ class GuildActivityBridge:
                     "totalBatches": int(math.ceil(len(new_snaps) / batch_size)),
                     "stats": chunk,
                 }
+                self._set_ui_activity(
+                    "Subiendo snapshots",
+                    progress=f"Lote {int(i // batch_size) + 1}/{int(math.ceil(len(new_snaps) / batch_size))}",
+                )
                 self._post_to_web_with_retry(payload, purpose=f"stats {i//batch_size+1}/{math.ceil(len(new_snaps)/batch_size)}")
 
             # Actualizar estado: último ts subido
@@ -1292,6 +1193,8 @@ class GuildActivityBridge:
         if not isinstance(roster_members, dict) or not roster_members:
             logger.warning("No roster_members para subir a Web.")
             return
+
+        self._set_ui_activity("Preparando roster/chat", progress=f"{len(roster_members)} miembros detectados")
 
         added, updated, removed = self._compute_roster_delta(roster_members)
         roster_mode = "delta"
@@ -1343,6 +1246,7 @@ class GuildActivityBridge:
             self.state.roster_snapshot = self._build_roster_snapshot(processed_data.get("roster_members") or processed_data.get("members") or {})
             self._save_state()
             logger.info(f"{Fore.CYAN}No hay cambios en roster/chat. Se envió heartbeat de estado al sitio.")
+            self._set_ui_activity("Heartbeat sin cambios", progress="Roster intacto")
             return
 
         all_keys = list(roster_members.keys())
@@ -1352,6 +1256,7 @@ class GuildActivityBridge:
         session_id = upload_session_id
 
         logger.info(f"{Fore.YELLOW}Iniciando Upload Web Roster/Chat (ID: {session_id}) - miembros: {total_members}, batch: {batch_size}")
+        self._set_ui_activity("Subiendo roster/chat", progress=f"0/{max(1, math.ceil(total_members / batch_size))} lotes")
 
         # Payload builder
         def build_payload(batch_keys: List[str], batch_index: int, total_batches: int, is_final: bool) -> Dict[str, Any]:
@@ -1438,6 +1343,10 @@ class GuildActivityBridge:
             payload = build_payload(batch_keys, batch_index, total_batches, is_final)
 
             try:
+                self._set_ui_activity(
+                    "Subiendo roster/chat",
+                    progress=f"Lote {batch_index}/{total_batches} ({len(batch_keys)} miembros)",
+                )
                 self._post_to_web_with_retry(payload, purpose=f"roster batch {batch_index}/{total_batches} ({len(batch_keys)})")
                 idx += batch_size
                 batch_index += 1
@@ -1457,6 +1366,7 @@ class GuildActivityBridge:
         self.state.roster_snapshot = self._build_roster_snapshot(processed_data.get("roster_members") or processed_data.get("members") or {})
         self._save_state()
         logger.info(f"{Fore.GREEN}✔✔ Upload Web Roster/Chat Completado Exitosamente (session {session_id}).")
+        self._set_ui_activity("Subida web completada", progress=f"Sesión {session_id}", level="success")
 
     # -------------------------
     # HTTP helper
@@ -1493,6 +1403,7 @@ class GuildActivityBridge:
                 # auth problems -> no tiene sentido reintentar infinito
                 if resp.status_code in (401, 403):
                     logger.error(f"{Fore.RED}Web auth error ({resp.status_code}) en {purpose}. Revisa WEB_API_KEY / settings del sitio.")
+                    self.ui.push_log(f"Auth error {resp.status_code} en {purpose}", level="error")
                     raise RuntimeError(f"Web auth error {resp.status_code}")
 
                 # zod validation / bad request
@@ -1502,13 +1413,17 @@ class GuildActivityBridge:
                     except Exception:
                         details = resp.text[:400]
                     logger.error(f"{Fore.RED}Web validation error {resp.status_code} en {purpose}: {details}")
+                    self.ui.push_log(f"Validación falló ({resp.status_code}) en {purpose}", level="error")
                     raise RuntimeError(f"Web validation error {resp.status_code}")
 
                 # 429/5xx/etc: reintentar
                 logger.warning(f"{Fore.YELLOW}Web error {resp.status_code} en {purpose}. Intento {attempt}. Backoff {backoff:.1f}s")
+                self.ui.push_log(f"Web error {resp.status_code} en {purpose}. Reintento {attempt}", level="warn")
                 if allow_queue and attempt >= max_attempts_before_queue:
                     self.local_queue.enqueue(payload, purpose)
                     logger.warning(f"{Fore.MAGENTA}Persisten errores de server ({resp.status_code}). Payload en cola local.")
+                    self._ui_queue_note = self._queue_status_note()
+                    self._refresh_ui(self._is_wow_running())
                     return
                 time.sleep(backoff)
                 backoff = min(max_backoff, backoff * 1.6)
