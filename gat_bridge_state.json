@@ -1,4 +1,6516 @@
 {
-  "last_uploaded_stats_ts": 1766461052,
-  "last_web_session_id": "20251222223841-0de72c"
+  "last_uploaded_stats_ts": 1766484825,
+  "last_web_session_id": "20251223133158-421aa6",
+  "roster_snapshot": {
+    "Orphelo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Yurth-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dethshade-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Freidh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mábel-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ramafuci-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Alfonsus-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dorx-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Demonelfz-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Wallace-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mhístogan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Alipiclex-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Francisdh-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Juliars-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shikawara-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 1766457327,
+      "lastMessage": "en 5 minutos me retiro a comer "
+    },
+    "Zegat-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Azzazél-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Aeger-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1765995000,
+      "lastMessage": "hola gracias por invitar"
+    },
+    "Kronnox-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tharegord-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Celiara-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bicycle-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ashtanael-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Elyre-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766026923,
+      "lastMessage": "bueno, asi me sentiria en casa"
+    },
+    "Ruoim-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Wrathz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dalìlà-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sàmaèl-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lauhfen-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Malikath-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Alexit-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Diablotempes-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766106749,
+      "lastMessage": "hellow hellow"
+    },
+    "Morzhan-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Deadangêlla-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Illuminatis-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Miscvens-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Elians-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tortiz-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Luzpal-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bowtox-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shinkmonk-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kazanki-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766104986,
+      "lastMessage": "buenas  gracias por invitar"
+    },
+    "Iabot-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Huntdmang-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dhariò-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ryuzke-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kores-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shamanred-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Brogumor-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dextierro-Medivh": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 1766378241,
+      "lastMessage": "esta bien gracais"
+    },
+    "Drêk-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Keelly-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kurumíí-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ours-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lunaceleste-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766132361,
+      "lastMessage": "gracias Javi"
+    },
+    "Søulwar-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ownäri-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Furianimal-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Arthord-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766205714,
+      "lastMessage": "algun grupo para m0 ? "
+    },
+    "Kyior-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Javyworlds-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Puerquirri-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dkway-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zelin-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Leafrunner-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Faid-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ghaladriël-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Memetina-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Glarious-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Asurã-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Namu-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766062249,
+      "lastMessage": "Hola gracias!!"
+    },
+    "Zovék-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766277837,
+      "lastMessage": "Buenas, buenas"
+    },
+    "Sherylls-Quel'Thalas": {
+      "rank": "Reserva",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Contastelle-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lleonnaa-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Destronrey-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Arrayán-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ttiniebla-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sorshï-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Banrsix-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shakador-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mhuryn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766353936,
+      "lastMessage": "Hola gente"
+    },
+    "Tuerkita-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jormungwyn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Qqww-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Incidio-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Pocox-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dhemeter-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Caedo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Anthorus-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hyena-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Parpuch-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hathorx-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tristón-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Drâvez-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Leotherax-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jovahu-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Srquenthin-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rizpahh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1765992780,
+      "lastMessage": "hola gracias por inviotar"
+    },
+    "Mixcieguito-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 1766449772,
+      "lastMessage": "tal vez. pero no la mas divetrtida"
+    },
+    "Eleym-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dracho-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sugarcane-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766277203,
+      "lastMessage": "nass noches"
+    },
+    "Mankir-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Michelia-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Chamuqo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766290752,
+      "lastMessage": "hola"
+    },
+    "Fâfnyr-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Xpeditions-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kreyger-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Luxsool-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Myvoid-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lobiito-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Screech-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766014320,
+      "lastMessage": "hola"
+    },
+    "Yuanchen-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kratos-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Qzaitam-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Llumma-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Várïan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mordëlon-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kinetíc-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Agalion-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cheater-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rossweiss-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Puzzya-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Natexe-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766449749,
+      "lastMessage": "la forma mas rapida de subir el poder infinito es con el farm del sentinax ?"
+    },
+    "Shurrasco-Quel'Thalas": {
+      "rank": "Capitán",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766455323,
+      "lastMessage": "hola"
+    },
+    "Houndd-Exodar": {
+      "rank": "Capitán",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hasbuulla-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Skniretsolg-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Elifie-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Wtin-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766018160,
+      "lastMessage": "olas"
+    },
+    "Ysoldeth-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sunfr-Quel'Thalas": {
+      "rank": "Teniente",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mishaell-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766193412,
+      "lastMessage": "party buenas noches "
+    },
+    "Maronta-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vraxis-Quel'Thalas": {
+      "rank": "Reserva",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dionay-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vhraelyn-Quel'Thalas": {
+      "rank": "Reserva",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Noellia-Quel'Thalas": {
+      "rank": "Reserva",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Manopétrea-Quel'Thalas": {
+      "rank": "Reserva",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Itzelsayuri-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dragonab-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rübyx-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Abhartachs-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Javyworld-Quel'Thalas": {
+      "rank": "Reserva",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gustavson-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766019060,
+      "lastMessage": "xDDD"
+    },
+    "Eryxan-Quel'Thalas": {
+      "rank": "Reserva",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dhynasty-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Syndragocita-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Aelyndris-Quel'Thalas": {
+      "rank": "Reserva",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Melijáh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Varakie-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bobbymister-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Raenlas-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Devors-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Porkyranger-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Monlev-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766113729,
+      "lastMessage": "asi le dije a 5 hordas antes de matarlos jajaja"
+    },
+    "Theloníus-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Alannary-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lunaloveyou-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lunablue-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Svetlaná-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lukaasvaanne-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 1766023885,
+      "lastMessage": "ya no te acuerdas de mi :p nikely"
+    },
+    "Odok-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Fhuler-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Leyzor-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766289594,
+      "lastMessage": "me acaba de caer"
+    },
+    "Kunfuköke-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 1766442295,
+      "lastMessage": "porque va a desconectarse esto?"
+    },
+    "Serithzul-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ignisruber-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tyrain-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 1766181599,
+      "lastMessage": "alguno tiene una piedra HoA+10?"
+    },
+    "Avix-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Magoria-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ilydam-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Elyka-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kelbur-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766025295,
+      "lastMessage": "Buenas"
+    },
+    "Lisa-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Longg-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dorkur-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Itzleyend-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 1766326408,
+      "lastMessage": "hola buenas tardes amigos"
+    },
+    "Drákkar-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766285334,
+      "lastMessage": "holas"
+    },
+    "Lôuisse-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Coque-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766456202,
+      "lastMessage": "|cnIQ4:|Hitem:222448:7445:::::::80:255::13:9:10421:9633:8902:9627:8791:12050:12052:11300:8960:9:28:2734:29:49:30:36:38:8:40:2159:45:222593:46:231756:47:231769:48:226024::::Player-1428-0DDA6EAD:|h[Alabarda cargada |A:Professions-ChatIcon-Quality-Tier5:17:17::1|a]|h|r"
+    },
+    "Arkenanporoz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Frutok-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Coket-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 1766349213,
+      "lastMessage": "si mi internet me lo permite jajaj"
+    },
+    "Zena-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gordotony-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Linathil-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shatram-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766430400,
+      "lastMessage": "sin embargo gracias por la aclaración !"
+    },
+    "Bramter-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lumenlunae-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Uldric-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Fidêito-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ataa-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766346816,
+      "lastMessage": "tonces borren mi comentario"
+    },
+    "Arrlyn-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Anasteri-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766376441,
+      "lastMessage": "palazo!!!"
+    },
+    "Aaba-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766098063,
+      "lastMessage": "jajaja :V"
+    },
+    "Blöuse-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766181860,
+      "lastMessage": "esa de azshara te dan por temrinar al camañna de suramar"
+    },
+    "Guayara-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kunfulin-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hàtred-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 1766441889,
+      "lastMessage": "alguna idea por la desconexion del server?"
+    },
+    "Valandrien-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ñrav-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ëlika-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766335188,
+      "lastMessage": "buenas"
+    },
+    "Çhakra-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Äbyss-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 1766018220,
+      "lastMessage": "Casualemente tengo un pjt que se llama Gustav y es war también xDDD"
+    },
+    "Omara-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nephæm-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Drukz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Boboso-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 1766172885,
+      "lastMessage": "misiones, mazmorras y anasterio me esta explicando el juego jaja"
+    },
+    "Benimaruwolf-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zidärtha-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 1766159504,
+      "lastMessage": "debo irme, mi planeta me necesita"
+    },
+    "Zanzonomega-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Korthén-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ganico-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Omilight-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sakuri-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Aas-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Yzrael-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 1766014860,
+      "lastMessage": "tiene seguridad privada?"
+    },
+    "Makalos-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766179775,
+      "lastMessage": "vale"
+    },
+    "Ziqma-Illidan": {
+      "rank": "Teniente",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cartors-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Wirockocha-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766093333,
+      "lastMessage": "asu no recuerdo jeje "
+    },
+    "Whyskyroom-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rodi-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766348361,
+      "lastMessage": "ok"
+    },
+    "Lemari-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Wargok-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Enanólopus-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vivyan-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vitnir-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vilgnomo-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sylvainia-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766284966,
+      "lastMessage": "uff eso pense.. voy a probar con la shamy a ver si me resulta aunq un poco cansada de hacer las mismas cosas..."
+    },
+    "Sadystic-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Chammyheler-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766026226,
+      "lastMessage": "a que invitas?"
+    },
+    "Ilíaz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766193434,
+      "lastMessage": "?"
+    },
+    "Vennøm-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 1766441510,
+      "lastMessage": "porfa"
+    },
+    "Stormdark-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 1766278237,
+      "lastMessage": "si, todo tiene un origen"
+    },
+    "Veliora-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Guldblack-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Teilius-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766272332,
+      "lastMessage": "Buenas, como estan?"
+    },
+    "Raccoo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Regnael-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shenwuu-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zuperion-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vaelkara-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vaanari-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Uroborox-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cyffer-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Luukasvanne-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shaunismax-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tálen-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766288812,
+      "lastMessage": "wtf xd"
+    },
+    "Brandino-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lideres-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tuprincess-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 1766104950,
+      "lastMessage": "aloha mi gente bella "
+    },
+    "Extraditable-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Treguemem-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cyrcê-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rhaliant-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Stárlôrd-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cybrax-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 1766362980,
+      "lastMessage": "|cnIQ4:|Hkeystone:180653:503:2:0:0:0:0:0|h[Piedra angular: Ara-Kara, Ciudad de los Ecos (2)]|h|r"
+    },
+    "Sanabo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bri-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Thorvaneitor-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766346860,
+      "lastMessage": "remix"
+    },
+    "Thomny-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766077139,
+      "lastMessage": "que piedra tienes?"
+    },
+    "Therraan-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zaryndel-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Terkoh-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766192545,
+      "lastMessage": "si los veo al rato y hay cupo me uno"
+    },
+    "Douglhasholy-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rive-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Illidalex-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tatojr-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766434659,
+      "lastMessage": "khe"
+    },
+    "Taali-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766206896,
+      "lastMessage": "buenas!"
+    },
+    "Mörrigänn-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Balerionn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Izalqueño-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ishalan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Strell-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jinwoosun-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Charløtté-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 1766452146,
+      "lastMessage": "soy sanador"
+    },
+    "Solvarun-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 22,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Damíán-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Geikln-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 1766332526,
+      "lastMessage": "Alguien me puede ayudar a llegar a K'aresh"
+    },
+    "Venhauzen-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Stevengxd-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Snorlakz-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 1766441049,
+      "lastMessage": "jugamos wow "
+    },
+    "Siterion-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Doramo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jrcl-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kharium-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 1765949160,
+      "lastMessage": "gracias por la invitacion"
+    },
+    "Shirøzhan-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shagruvia-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766022750,
+      "lastMessage": "algun dps y healer para |cnIQ4:|Hkeystone:180653:525:4:158:0:0:0:0|h[Keystone: Operation: Floodgate (4)]|h|r"
+    },
+    "Sgyugen-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1765987440,
+      "lastMessage": "gente ya conseguí casí todo de remix, me faltan algunas cosas con bronce. Quiero continuar las campañas de sede, vale la pena seguir en modo heroico? o me paso a normal para rushear"
+    },
+    "Siguismunt-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cyréne-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Libchan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Novadafne-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jinda-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shádowmourne-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bohaz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sedryll-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766193441,
+      "lastMessage": "a donde vamos?"
+    },
+    "Fentrir-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Wildrom-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vyneresh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Faltoras-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rydom-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Aitorhremix-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lidalu-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rinnalldo-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rhaira-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1765987500,
+      "lastMessage": "es bastante aburrido en normal la verdad"
+    },
+    "Carlafull-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Chispatruenó-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Reßecca-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Briannaz-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Darzkalleb-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Razaggal-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 1766183822,
+      "lastMessage": "en remix"
+    },
+    "Graverion-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Babygirl-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ravek-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 1766284968,
+      "lastMessage": "a mi ni me salen bugs ah de ser suerte"
+    },
+    "Alarien-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Pruca-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Akhorr-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bengelz-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1765951140,
+      "lastMessage": "Cada cuanto se renuevan los abismos recargados alguien sabe?"
+    },
+    "Veredian-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Chenwoo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 1766477674,
+      "lastMessage": "hola"
+    },
+    "Kleinesbier-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Premaoh-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Pichulön-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Migordi-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Marlha-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Maluko-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 1766103057,
+      "lastMessage": "Esta guild solo acepta alianzas?"
+    },
+    "Erchickna-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Adeata-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1765998060,
+      "lastMessage": "tiene que estar jugando con 300 ms"
+    },
+    "Síckly-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Thalasán-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Maiven-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dracostraszi-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 1766027466,
+      "lastMessage": "sacaron el club de la pelea"
+    },
+    "Paltyr-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766101946,
+      "lastMessage": "Me sumo a la charla (no jugue las expansiones en las que sylvana se va a la mierda) pero me parece interesante la idea de que vuelve para redimirse y defender el sunwell que es donde Arthas la transforma"
+    },
+    "Vicmandk-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gokuys-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shuwakas-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ortusolis-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Oprohwindfur-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766360838,
+      "lastMessage": "-_-"
+    },
+    "Cämlo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Picagnomo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mastterd-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Menewin-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nork-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Elementíum-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Puraluz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nileus-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Margrave-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Aesteria-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Carokill-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 1766322404,
+      "lastMessage": "hola hola, alguien para hacer la Forja de mana omega?"
+    },
+    "Martillomard-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cäitlÿn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bluzk-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rainhard-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nezarke-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 1766358651,
+      "lastMessage": "hola :)"
+    },
+    "Nikelly-Quel'Thalas": {
+      "rank": "Emperador",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nanopurogas-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Moltrun-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Anticcide-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Novapixylili-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mâgnûs-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Muuzaan-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Morixina-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Talidan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Moonnlyght-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 1766349266,
+      "lastMessage": "o *"
+    },
+    "Monkgordo-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Monkaa-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Paladnx-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766025867,
+      "lastMessage": "gracias por la invitacion :)"
+    },
+    "Panetoncito-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1765987560,
+      "lastMessage": "gracias"
+    },
+    "Moh-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766107748,
+      "lastMessage": "en el banco, al fondo "
+    },
+    "Phione-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hiddenrazor-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Licenstrasel-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766358001,
+      "lastMessage": "cuanto se tarda en subir el indice de 0 hasta las monturas?"
+    },
+    "Ludopataa-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Melieris-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 1766001000,
+      "lastMessage": "alguien puede hacer esto |cnIQ4:|Hitem:222815::::::::80:256::13:1:3524:4:40:2350:38:8:46:231756:48:222581:::::|h[Puños consagrados |A:Professions-ChatIcon-Quality-Tier5:17:17::1|a]|h|r"
+    },
+    "Marymia-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 1766025430,
+      "lastMessage": "hola a tods"
+    },
+    "Sarnel-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Daytuz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ykra-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Manding-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Altäria-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mallpharios-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lunhia-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Arminá-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Darkmolgus-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hitsüyi-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Warlocktao-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lón-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Neodm-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Miulky-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Anabelthais-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Xelahnir-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Magiclock-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Deadbxby-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766441285,
+      "lastMessage": "xd"
+    },
+    "Lahimy-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Swaelee-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Maaryjo-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Wolfherb-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sophiegermai-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Taizanfukun-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Thorven-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lunárys-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766012760,
+      "lastMessage": "jajaja y mi regalo santa"
+    },
+    "Azaely-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Brujoebrio-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Halnar-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Briti-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Destroxo-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 1766284184,
+      "lastMessage": "LFC |cnIQ2:|Hitem:215137::::::::80:577::13:1:3524:2:40:1280:38:4:::::|h[Algari Competitor's Signet |A:Professions-ChatIcon-Quality-Tier1:17:15::1|a]|h|r"
+    },
+    "Atthís-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Douglhasdh-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Yooyeoni-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Korvassh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Loßuki-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Darkgêl-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Aimara-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Akkamä-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lotha-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vilkan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Levophed-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 1766031383,
+      "lastMessage": "faltan"
+    },
+    "Killswiitch-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Umbrahil-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cabezafilada-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 1766099315,
+      "lastMessage": "Bien, que no se pierda la costumbre"
+    },
+    "Vyaeron-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rivareth-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Urtha-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lenmark-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766102135,
+      "lastMessage": "todos"
+    },
+    "Azax-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kayñ-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Llayo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Legionito-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766346819,
+      "lastMessage": "esta vivo !!"
+    },
+    "Matíí-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vanholsengg-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Drchase-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Foltor-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nagualli-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Laykka-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Küuma-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Boromiir-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Quayin-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Balathar-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Arcanumrose-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766386062,
+      "lastMessage": "grcias por invitar"
+    },
+    "Trevbëlmont-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ccarlosdos-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 1766107692,
+      "lastMessage": "hola donde esta la boveda"
+    },
+    "Luciifer-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kyranel-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766093929,
+      "lastMessage": "ty"
+    },
+    "Ithildan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zectz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gixi-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766025308,
+      "lastMessage": "buenas tx por la inv"
+    },
+    "Kinaroth-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kurøchan-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Pgbm-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Krizstina-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shadowmel-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Xelita-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Yeszi-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Viankä-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Brillantin-Quel'Thalas": {
+      "rank": "Reserva",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Iryn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Joseaugusto-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766373417,
+      "lastMessage": "|cnIQ4:|Hkeystone:180653:392:2:0:0:0:0:0|h[Piedra angular: Tazavesh: Gambito de So'leah (2)]|h|r gente para esta key?"
+    },
+    "Jonydx-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 1766288794,
+      "lastMessage": ":v"
+    },
+    "Abyssfall-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Milkka-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Barbosah-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Khayren-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jatz-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Iqu-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Inacap-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766348659,
+      "lastMessage": "aa"
+    },
+    "Byâkkø-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Crakbøy-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Torque-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766281900,
+      "lastMessage": "nikkelly volviste"
+    },
+    "Hueye-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766353543,
+      "lastMessage": "aa gracias, estoy disponible para ayudar a cualquiera "
+    },
+    "Holyligth-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766350354,
+      "lastMessage": "alguno me puede ayudar con un anillo de pvp ? lo mande hacer para publico pero no sale aun :("
+    },
+    "Elidarya-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Algra-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 1765949040,
+      "lastMessage": "dale nos vemos :D"
+    },
+    "Hargrald-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Demonbhell-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Silypse-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hangsang-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Voidhun-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Soniahime-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gûerra-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 1766338971,
+      "lastMessage": "pregunta recount es sigue sirviendo?"
+    },
+    "Aumus-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tukos-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gwenfury-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rushiez-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mefistøfeles-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Javymancer-Quel'Thalas": {
+      "rank": "Reserva",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ëythër-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Raxion-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Áíra-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gintaro-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766436025,
+      "lastMessage": "s"
+    },
+    "Drusyla-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Imfa-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gaelick-Drakkari": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Legolascl-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gaelerionx-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Geukeu-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 1766103035,
+      "lastMessage": "hola o/"
+    },
+    "Freezinglord-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766193282,
+      "lastMessage": "XD"
+    },
+    "Thía-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vøhítö-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Karinax-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sharròn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bellyclaw-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766098097,
+      "lastMessage": "ahhh mi dk. mixdepeste"
+    },
+    "Disruption-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kataem-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Harkat-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 1766013960,
+      "lastMessage": "gracias por el invite :)"
+    },
+    "Spartakvs-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Faerea-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Uriith-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Drianik-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Plxy-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766386929,
+      "lastMessage": "hola gracias por la invi"
+    },
+    "Fairyytail-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Demcaz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nautic-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 1766456184,
+      "lastMessage": "Alguno es herrero para un Recraft ? |cnIQ4:|Hitem:222447:3368:::::::80:251::13:9:10421:9633:8902:9627:8791:12050:12053:11300:8960:9:28:2734:29:32:30:36:38:8:40:2158:45:222593:46:231756:47:231768:48:226024::::Player-1428-0CE9FA44:|h[Mandoble cargado |A:Professions-ChatIcon-Quality-Tier5:17:17::1|a]|h|r"
+    },
+    "Dovahkyiin-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Eysallii-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Monxd-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Evienox-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Brandiño-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Palturini-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Walgren-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766463087,
+      "lastMessage": "uff"
+    },
+    "Pripiat-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Elflina-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Masträ-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cain-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jefebrujo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Meitel-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rureaux-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bhaldur-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Moonknigh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Themperadór-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Okanori-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Belagost-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766449330,
+      "lastMessage": "wenas"
+    },
+    "Volcus-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Anyelique-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766327687,
+      "lastMessage": "alguien puede carftear |cnIQ4:|Hitem:219342::::::::80:253::13:1:3524:3:40:1428:38:4:50:231756:::::|h[Avambrazos grabados con glifos |A:Professions-ChatIcon-Quality-Tier1:17:15::1|a]|h|r"
+    },
+    "Terblade-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ferkah-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 1766442488,
+      "lastMessage": "ggs"
+    },
+    "Milremi-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Drékan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Delavitta-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766441056,
+      "lastMessage": "jajaj"
+    },
+    "Leelcca-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Valathria-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dollvar-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Darlumish-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Malfûrion-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dabolica-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 1766326496,
+      "lastMessage": "hola"
+    },
+    "Cuidador-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Brillaluna-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cratozanzon-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Adluca-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nortatem-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1765985880,
+      "lastMessage": "wenas, gracias"
+    },
+    "Rygary-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Chakrâ-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Abíix-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cerilna-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lucami-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ceniziento-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nicki-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766014260,
+      "lastMessage": "aumento, 45k"
+    },
+    "Stalamuertê-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Àragorn-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766277863,
+      "lastMessage": "nombre seria peor ando mas pobre en el wow jajaja"
+    },
+    "Myes-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 55,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bijin-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dîablö-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Giildars-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Flechaterror-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766461104,
+      "lastMessage": "me pasó hace unos momentos que en rompealbas +4, en el último boss se buggeo"
+    },
+    "Qorum-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Belether-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Baldür-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1765951140,
+      "lastMessage": "son diario se supone"
+    },
+    "Jrsakuri-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Stonebankxs-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gillgirl-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nerelya-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kharedum-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bakiik-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 1766373352,
+      "lastMessage": "saludos gente"
+    },
+    "Kukito-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Aguilarh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mostrosaurio-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gandelfh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bakia-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766027853,
+      "lastMessage": "vaaaaa"
+    },
+    "Shamacitox-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Akcrot-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Luûn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Buam-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ayende-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 1766028005,
+      "lastMessage": "ty}"
+    },
+    "Lavarba-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Awesoome-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766284701,
+      "lastMessage": "era mas la curisosidad de conocer y por se ayudaba y se iba"
+    },
+    "Atlanter-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766091542,
+      "lastMessage": "se tarda mucho tirar uno por uno jajaj"
+    },
+    "Arzul-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766451865,
+      "lastMessage": "QUE SACAN HACIENDO MITICAS"
+    },
+    "Terystrah-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ammaethas-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Amercita-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Alekgo-Ragnaros": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Aethelwolf-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766091022,
+      "lastMessage": "gracias"
+    },
+    "Elamigue-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vaenn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jhaydalf-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Saelan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ñjose-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Êllyz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Çøkïs-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hîmekø-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Thirfyn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Barbatula-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Yainz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zestrana-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dhastan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ginus-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ákhal-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sixinone-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mactheknife-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zweihändér-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Taenwi-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zirikk-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Halfbaked-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Alkhimist-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ædez-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Aethrion-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zeinit-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Blànnk-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Alexändër-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zaydr-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Thasadar-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 1766358615,
+      "lastMessage": "algo :)"
+    },
+    "Paltrazan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 1766103981,
+      "lastMessage": "Hola, gracias :)"
+    },
+    "Goriko-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Boluditã-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rasdy-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Yurih-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Juanmánce-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766285286,
+      "lastMessage": "ty"
+    },
+    "Ewbarrin-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shakamonk-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Yosh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Yonaikelmonj-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Huntermixx-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hammplatz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kilpaladin-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Martillazos-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Yhui-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Chinchinilla-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kougin-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 1766181833,
+      "lastMessage": "roja y amarilla"
+    },
+    "Yavaná-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Syleintara-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lyfery-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Amaugh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sankaja-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cifur-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ænyx-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Soza-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lûnaria-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jïa-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mirielf-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Saylaz-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Warvoid-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Warrentmust-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Santaclaüs-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766269568,
+      "lastMessage": "Feliz navidad"
+    },
+    "Vrayne-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Fattkunt-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vorkhaan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Darkgrove-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Visôr-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Timbersáw-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dstrike-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 1766004180,
+      "lastMessage": "easy"
+    },
+    "Elogwen-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Korfáx-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vivianitha-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Davbid-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vdelta-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lighttouch-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Linkan-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766158388,
+      "lastMessage": "Buen día a todos :)"
+    },
+    "Viledm-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vicmagillo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kljaeden-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vesh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Verara-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Enashel-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Chimonio-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gaalder-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vasagoe-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Valthira-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766110772,
+      "lastMessage": "uwu"
+    },
+    "Scinderella-Quel'Thalas": {
+      "rank": "Sargento",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766271814,
+      "lastMessage": "dame invi"
+    },
+    "Vanhohenhein-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vardu-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Adhem-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shellalizn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Democratica-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vacl-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Blacktïger-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1765951080,
+      "lastMessage": "gracias !"
+    },
+    "Vacionuluz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hopebringer-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ill-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Soddel-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Breathin-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rockfu-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Fáinál-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Uglydiego-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nizama-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Turell-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ustan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kúrøchán-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Minozs-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tradane-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Elwyn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tiddehunter-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Flew-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Thima-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Thalimoon-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Thalannar-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Arlethsan-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Telumar-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tatooh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766080510,
+      "lastMessage": "hola :) "
+    },
+    "Akazademon-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tarho-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zumylda-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sígfried-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Phaxsy-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kazgor-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766196149,
+      "lastMessage": "hola gente :)"
+    },
+    "Aslaan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Yobanitá-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Spartacos-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sem-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Soúlsreaper-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gladiadòr-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Xentesha-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Justæsse-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 1766112882,
+      "lastMessage": "Gracias por la invitacion"
+    },
+    "Rágewölf-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sotovega-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Vacarrita-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Blackbuff-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lingyoshi-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Smexi-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bäbü-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gearhammer-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sionsix-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Elgordotony-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jarlis-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nalgonsón-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Donparra-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Currucuquita-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Silvellight-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Anjelli-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Otecemmy-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jetok-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shába-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Azsumii-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shoutaquis-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1765950480,
+      "lastMessage": "any heal for psf 9?"
+    },
+    "Portatebien-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shoshana-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shinwen-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Luminiss-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Durlig-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Devóra-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Krompus-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kushikatsu-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ginkelly-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766346763,
+      "lastMessage": "Gratz!"
+    },
+    "Jarias-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hevild-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Franc-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Fakrieg-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Pinkywinks-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Aaku-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Blancatetas-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Frielastia-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Krattos-Quel'Thalas": {
+      "rank": "Reserva",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mongik-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766442533,
+      "lastMessage": "no me quiero ir señor stark"
+    },
+    "Ýunnan-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766104959,
+      "lastMessage": "Buenas buenas gente"
+    },
+    "Gugús-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Folkell-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dhyann-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ironchip-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Neraly-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dhaeneryst-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ciindyk-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sewi-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Buryck-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sindywar-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Moneymonk-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Elisandë-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ixoloi-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Coquetas-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Druidazx-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rhenna-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nolfuriam-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Selènê-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Smougocklly-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Marianit-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lombardii-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shamilar-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rollstone-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shamlu-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Melrathil-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Belanati-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Aliwenddy-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dagarha-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Devilhammer-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rhaztol-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Skera-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kocá-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Maelric-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kæshÿ-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Olívia-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dravëz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lìam-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Neyzã-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lecarra-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Durgá-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mdr-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Postedh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Armeggido-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Myway-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Amarantae-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gevarus-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Joyster-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Valkalerdx-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Prïa-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Axegerd-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zacyel-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cejamurta-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gias-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Breelie-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Noumss-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ahwoll-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Madanach-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sw-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Galadion-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kncerbero-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ironshammy-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Fêh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Pudinazo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nox-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "EVOKER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jessya-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bertz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Irnis-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hikidashi-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Paachamama-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ariphine-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Turaelius-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Florián-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Enrriqué-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Equinox-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766458839,
+      "lastMessage": "2. Shurrasco ..... 10m 47s"
+    },
+    "Carbonfú-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Trínia-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Abumarcelina-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Shazann-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Essí-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Granolock-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Chamarbon-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Libreblade-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lokivill-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nittzy-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lapianan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Atlasbringer-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kayhozz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Arilor-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Felipon-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nacord-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kurøzhan-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Elefix-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Clóé-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Barbrasa-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Raillan-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Locolucho-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Northwinds-Quel'Thalas": {
+      "rank": "Capitán",
+      "lvl": 76,
+      "class": "WARRIOR",
+      "lastSeenTS": 1766278630,
+      "lastMessage": "jajaja"
+    },
+    "Oriuxel-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hepatitica-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nhadja-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Neryce-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Elkukuli-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Namti-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Sundari-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766376324,
+      "lastMessage": "no te preocupes conmigo, cuando quieras un hunter pro le digo a mi esposa"
+    },
+    "Havid-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lycaeus-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Maalue-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lyrabell-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dhereck-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Anggelwarr-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mictlanengi-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Michicat-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Nëëds-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 1766455996,
+      "lastMessage": "cuanta madera necesito  para esa fuente ?"
+    },
+    "Aontharal-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Yggdràsil-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Babiba-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Massterd-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mariana-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Díspelpliz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Arlequiinz-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MONK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Rhymes-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Mcglaiver-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Jiova-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Cosmobscuro-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Panchobledr-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lunysen-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bëllion-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Eleanor-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "ROGUE",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Darkkate-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Laikerpo-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lulilü-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lscrng-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Arhawn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Tatoh-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 53,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Faerhad-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Ayzhy-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Hôm-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Lilliál-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Flanelosky-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Chomita-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Gothdrick-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Røwân-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Arishen-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Edewin-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 1766289492,
+      "lastMessage": "en hero no cayo"
+    },
+    "Baaela-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dadina-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "MAGE",
+      "lastSeenTS": 1766278391,
+      "lastMessage": "gracias por la invitacion"
+    },
+    "Gryphonmasta-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Bjórns-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Dipnos-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Âstreâ-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEATHKNIGHT",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Seyn-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "HUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Harduun-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Khayen-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Chamaneño-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "SHAMAN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kinkymation-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Celtium-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "WARLOCK",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Innerdain-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Zarca-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 1766112755,
+      "lastMessage": "gracias por la invitacion"
+    },
+    "Enanofuete-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Grøber-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DEMONHUNTER",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Kit-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PRIEST",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Woallance-Quel'Thalas": {
+      "rank": "Soldado",
+      "lvl": 80,
+      "class": "WARRIOR",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Generth-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "PALADIN",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    },
+    "Drudazno-Quel'Thalas": {
+      "rank": "Recluta",
+      "lvl": 80,
+      "class": "DRUID",
+      "lastSeenTS": 0,
+      "lastMessage": ""
+    }
+  }
 }

@@ -1,17 +1,18 @@
 """Self-contained bootstrapper to install Guild Activity Bridge and the WoW addon.
 
-This script is designed to be packaged as a single Windows `.exe` (e.g., with
-PyInstaller). When executed, it will:
+Este script está diseñado para empaquetarse como un único `.exe` de Windows (PyInstaller).
+Cuando se ejecuta:
 
-1) Deploy a portable Python runtime (no preinstalled Python needed).
-2) Install project dependencies.
-3) Copy the bridge files to a user-level install directory.
-4) Download and install the Guild-Command-Center addon from GitHub.
-5) Create launch shortcuts and optional autostart so the bridge waits in the
-   background for WoW.
+1) Despliega un runtime de Python portátil (no requiere Python preinstalado).
+2) Instala dependencias del bridge.
+3) Copia el bridge a un directorio de instalación por usuario.
+4) Descarga e instala el addon "Guild-Command-Center" desde GitHub.
+5) Crea lanzadores y autostart opcional para que el bridge espere en segundo plano.
 
-It keeps prompts minimal, asking only for paths/API data when defaults are not
-detectable.
+MEJORA CLAVE:
+- Configura WOW_ADDON_PATH apuntando al SavedVariables real:
+  ...\\_retail_\\WTF\\Account\\*\\SavedVariables\\GuildActivityTracker.lua
+  (aunque cambie el folder de cuenta tipo 364416775#1)
 """
 
 from __future__ import annotations
@@ -39,9 +40,7 @@ PYTHON_EMBED_URL = (
 
 ADDON_REPO = "JavyWorld/Guild-Command-Center"
 ADDON_BRANCH = "main"
-ADDON_ZIP_URL = (
-    f"https://github.com/{ADDON_REPO}/archive/refs/heads/{ADDON_BRANCH}.zip"
-)
+REPO_ZIP_URL = f"https://github.com/{ADDON_REPO}/archive/refs/heads/{ADDON_BRANCH}.zip"
 
 # Optional config file baked into the packaged .exe to avoid prompting users.
 INSTALL_CONFIG = Path(__file__).with_name("install_config.json")
@@ -95,11 +94,13 @@ def ensure_portable_python(target_dir: Path) -> Path:
         download_file(PYTHON_EMBED_URL, tmp_zip)
         extract_zip(tmp_zip, python_dir)
 
+    # Habilitar site-packages en el embed (quitando la restricción del ._pth)
     pth_file = next(python_dir.glob("*._pth"), None)
     if pth_file:
         content = pth_file.read_text(encoding="utf-8").splitlines()
-        edited = []
+        edited: list[str] = []
         for line in content:
+            # Dejamos import site activo
             if line.strip().startswith("import site"):
                 edited.append("import site")
             else:
@@ -124,6 +125,9 @@ def copy_project_files(
     source_root: Path, install_root: Path, extras: Optional[Iterable[Path]] = None
 ) -> None:
     install_root.mkdir(parents=True, exist_ok=True)
+
+    # OJO: credentials.json contiene credenciales de Google. Si piensas distribuir esto
+    # a otras personas, lo recomendable es NO copiarlo y usar un modo "web-only".
     files_to_copy: List[Path] = [
         source_root / "guild_activity_bridge.py",
         source_root / "bridge_ui.py",
@@ -144,6 +148,8 @@ def copy_project_files(
             else:
                 shutil.copy2(path, dest)
             log(f"Copiado {path.name} -> {dest}")
+        else:
+            log(f"Advertencia: {path.name} no existe en source_root ({source_root}).")
 
     media_src = source_root / "media"
     media_dst = install_root / "media"
@@ -164,6 +170,7 @@ def detect_wow_addons_paths() -> List[Path]:
             [
                 wow_root / "_retail_" / "Interface" / "AddOns",
                 wow_root / "_classic_" / "Interface" / "AddOns",
+                wow_root / "_classic_era_" / "Interface" / "AddOns",
             ]
         )
     if user_profile:
@@ -172,35 +179,92 @@ def detect_wow_addons_paths() -> List[Path]:
             [
                 documents_root / "_retail_" / "Interface" / "AddOns",
                 documents_root / "_classic_" / "Interface" / "AddOns",
+                documents_root / "_classic_era_" / "Interface" / "AddOns",
             ]
         )
     return [p for p in candidates if p.exists()]
 
 
-def install_addon(addons_path: Path) -> None:
+def detect_savedvariables_from_addons_path(addons_path: Path) -> Optional[Path]:
+    """
+    A partir de:
+      ...\\_retail_\\Interface\\AddOns
+    detecta:
+      ...\\_retail_\\WTF\\Account\\*\\SavedVariables\\GuildActivityTracker.lua
+
+    Devuelve el archivo más reciente si hay varios.
+    """
+    addons_path = addons_path.expanduser()
+
+    # Encontrar el root: _retail_, _classic_, etc.
+    wow_root = None
+    for parent in [addons_path] + list(addons_path.parents):
+        name = parent.name.lower()
+        if name in ("_retail_", "_classic_", "_classic_era_", "_ptr_", "_beta_"):
+            wow_root = parent
+            break
+
+    if wow_root is None:
+        return None
+
+    account_root = wow_root / "WTF" / "Account"
+    if not account_root.exists():
+        return None
+
+    candidates = list(account_root.glob("*/SavedVariables/GuildActivityTracker.lua"))
+    if not candidates:
+        return None
+
+    candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return candidates[0]
+
+
+def install_addon(addons_path: Path, extracted_repo_root: Optional[Path] = None) -> None:
+    """
+    Instala el addon dentro de Interface/AddOns.
+    Si se pasa extracted_repo_root, lo instala desde ahí (ya descargado).
+    Si no, descarga el zip del repo.
+    """
     addons_path.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_zip = Path(tmp_dir) / "addon.zip"
-        download_file(ADDON_ZIP_URL, tmp_zip)
-        extract_zip(tmp_zip, Path(tmp_dir))
-        extracted_root = next(Path(tmp_dir).iterdir())
-        addon_folder = extracted_root / "Guild-Command-Center"
+
+    def _install_from_repo_root(repo_root: Path) -> Path:
+        addon_folder = repo_root / "Guild-Command-Center"
+        if not addon_folder.exists():
+            raise SystemExit(
+                f"No se encontró la carpeta del addon en el repo extraído: {addon_folder}"
+            )
+
         target_folder = addons_path / addon_folder.name
         if target_folder.exists():
             shutil.rmtree(target_folder)
         shutil.copytree(addon_folder, target_folder)
-    log(f"Addon instalado en {target_folder}")
+        return target_folder
+
+    if extracted_repo_root is not None:
+        target = _install_from_repo_root(extracted_repo_root)
+        log(f"Addon instalado en {target}")
+        return
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_zip = Path(tmp_dir) / "repo.zip"
+        download_file(REPO_ZIP_URL, tmp_zip)
+        extract_zip(tmp_zip, Path(tmp_dir))
+        extracted_root = next(Path(tmp_dir).iterdir())
+        target = _install_from_repo_root(extracted_root)
+        log(f"Addon instalado en {target}")
 
 
 def write_env_file(
-    install_root: Path, wow_addon_path: Path, web_api_url: str, web_api_key: str
+    install_root: Path, wow_addon_path_value: str, web_api_url: str, web_api_key: str
 ) -> None:
     env_path = install_root / ".env"
+
+    # Comillas en WOW_ADDON_PATH por seguridad (path con #, espacios, etc.)
     template = textwrap.dedent(
         f"""
         WEB_API_URL={web_api_url}
         WEB_API_KEY={web_api_key}
-        WOW_ADDON_PATH={wow_addon_path}
+        WOW_ADDON_PATH="{wow_addon_path_value}"
         ENABLE_AUTOSTART_UI=true
         """
     ).strip() + "\n"
@@ -214,7 +278,7 @@ def create_start_scripts(install_root: Path, python_exe: Path) -> None:
         textwrap.dedent(
             f"""
             @echo off
-            cd /d %~dp0
+            cd /d "{install_root}"
             "{python_exe}" -u -B guild_activity_bridge.py
             """
         ).strip()
@@ -223,15 +287,15 @@ def create_start_scripts(install_root: Path, python_exe: Path) -> None:
     )
     log(f"Creado {runner}")
 
+    # VBS con ruta ABSOLUTA al .bat para que funcione incluso si lo copias a Startup
     launcher = install_root / "start_bridge_hidden.vbs"
+    # Escape backslashes in the runner path for VBS
+    vbs_runner_path = str(runner).replace('\\', '\\\\')
     launcher.write_text(
-        textwrap.dedent(
-            """
+        textwrap.dedent(f"""
             Set shell = CreateObject("WScript.Shell")
-            shell.Run "cmd /c \"%~dp0start_bridge.bat\"", 0, False
-            """
-        ).strip()
-        + "\n",
+            shell.Run "cmd /c \"{vbs_runner_path}\"", 0, False
+        """).strip() + "\n",
         encoding="utf-8",
     )
     log(f"Creado {launcher}")
@@ -240,6 +304,8 @@ def create_start_scripts(install_root: Path, python_exe: Path) -> None:
 def register_startup(install_root: Path) -> None:
     if not STARTUP_DIR.exists():
         STARTUP_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Copiamos el vbs "oculto" al startup. Como contiene ruta absoluta al .bat, funciona 100%.
     shortcut = STARTUP_DIR / "GuildActivityBridge.vbs"
     src = install_root / "start_bridge_hidden.vbs"
     shutil.copy2(src, shortcut)
@@ -296,17 +362,36 @@ def resolve_value(
     )
 
 
+def resolve_source_root_for_copy() -> Path:
+    """
+    Intenta usar el repo local (cuando ejecutas el bootstrapper dentro del repo).
+    Si no existe, lanza error claro.
+    (Nota: si quieres que el .exe sea totalmente autosuficiente sin repo local,
+    puedes cambiar esto para descargar el repo y usarlo como source_root).
+    """
+    candidate = Path(__file__).resolve().parent.parent
+    must_have = candidate / "guild_activity_bridge.py"
+    if must_have.exists():
+        return candidate
+    raise SystemExit(
+        "No se encontró guild_activity_bridge.py junto al bootstrapper.\n"
+        "Ejecuta este instalador desde el repo o ajusta resolve_source_root_for_copy() "
+        "para descargar el repo y copiar desde ahí."
+    )
+
+
 def main() -> None:
     args = parse_args()
     install_root = INSTALL_ROOT
-    source_root = Path(__file__).resolve().parent.parent
 
     config = load_config()
     log(f"Instalando en {install_root}")
+
     log_step(1, "Preparar Python portátil")
     python_exe = ensure_portable_python(install_root)
 
     log_step(2, "Copiar archivos del bridge")
+    source_root = resolve_source_root_for_copy()
     copy_project_files(source_root, install_root)
 
     log_step(3, "Instalar dependencias")
@@ -336,8 +421,22 @@ def main() -> None:
         "WEB_API_KEY", args.web_api_key, config, "web_api_key", interactive=args.interactive
     )
 
-    log_step(6, "Guardar configuración .env")
-    write_env_file(install_root, wow_addons_path, web_api_url, web_api_key)
+    log_step(6, "Detectar SavedVariables y guardar configuración .env")
+    savedvars = detect_savedvariables_from_addons_path(wow_addons_path)
+    if savedvars:
+        log(f"Detectado SavedVariables: {savedvars}")
+        wow_addon_path_value = str(savedvars)
+    else:
+        # Si aún no existe, dejamos "." para que el bridge auto-detecte más tarde.
+        log(
+            "No se encontró GuildActivityTracker.lua todavía.\n"
+            "Esto puede pasar si el usuario aún no abrió WoW con el addon.\n"
+            "Se guardará WOW_ADDON_PATH=\".\" y el bridge auto-detectará cuando el archivo aparezca "
+            "(tras abrir WoW y hacer /reload o salir del juego)."
+        )
+        wow_addon_path_value = "."
+
+    write_env_file(install_root, wow_addon_path_value, web_api_url, web_api_key)
 
     log_step(7, "Crear lanzadores (UI oculta)")
     create_start_scripts(install_root, python_exe)
@@ -353,3 +452,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+    
