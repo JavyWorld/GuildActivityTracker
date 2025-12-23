@@ -17,6 +17,7 @@ detectable.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
@@ -42,6 +43,9 @@ ADDON_ZIP_URL = (
     f"https://github.com/{ADDON_REPO}/archive/refs/heads/{ADDON_BRANCH}.zip"
 )
 
+# Optional config file baked into the packaged .exe to avoid prompting users.
+INSTALL_CONFIG = Path(__file__).with_name("install_config.json")
+
 INSTALL_ROOT = Path(os.environ.get("LOCALAPPDATA", "")) / "GuildActivityBridge"
 STARTUP_DIR = (
     Path(os.environ.get("APPDATA", ""))
@@ -55,6 +59,10 @@ STARTUP_DIR = (
 
 def log(msg: str) -> None:
     print(f"[installer] {msg}")
+
+
+def log_step(step: int, title: str) -> None:
+    log(f"Paso {step}: {title} ...")
 
 
 def download_file(url: str, dest: Path) -> Path:
@@ -112,7 +120,9 @@ def pip_install(python_exe: Path, requirements: Path) -> None:
     subprocess.run([str(python_exe), "-m", "pip", "install", "-r", str(requirements)], check=True)
 
 
-def copy_project_files(source_root: Path, install_root: Path, extras: Optional[Iterable[Path]] = None) -> None:
+def copy_project_files(
+    source_root: Path, install_root: Path, extras: Optional[Iterable[Path]] = None
+) -> None:
     install_root.mkdir(parents=True, exist_ok=True)
     files_to_copy: List[Path] = [
         source_root / "guild_activity_bridge.py",
@@ -182,7 +192,9 @@ def install_addon(addons_path: Path) -> None:
     log(f"Addon instalado en {target_folder}")
 
 
-def write_env_file(install_root: Path, wow_addon_path: Path, web_api_url: str, web_api_key: str) -> None:
+def write_env_file(
+    install_root: Path, wow_addon_path: Path, web_api_url: str, web_api_key: str
+) -> None:
     env_path = install_root / ".env"
     template = textwrap.dedent(
         f"""
@@ -235,7 +247,9 @@ def register_startup(install_root: Path) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Instalador automático de Guild Activity Bridge")
+    parser = argparse.ArgumentParser(
+        description="Instalador automático de Guild Activity Bridge (one-click)"
+    )
     parser.add_argument("--web-api-url", help="URL de la Web API (se usará en .env)")
     parser.add_argument("--web-api-key", help="API key para la Web API")
     parser.add_argument("--wow-path", help="Ruta al directorio AddOns de World of Warcraft")
@@ -244,13 +258,42 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="No registrar ejecución automática al iniciar Windows",
     )
+    parser.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Permitir preguntas en consola si faltan datos (por defecto es 100% automático)",
+    )
     return parser.parse_args()
 
 
-def prompt_if_missing(label: str, value: Optional[str]) -> str:
-    if value:
-        return value
-    return input(f"{label}: ").strip()
+def load_config() -> dict:
+    if INSTALL_CONFIG.exists():
+        try:
+            return json.loads(INSTALL_CONFIG.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            log(f"Advertencia: no se pudo leer install_config.json ({exc}). Se ignorará.")
+    return {}
+
+
+def resolve_value(
+    label: str,
+    cli_value: Optional[str],
+    cfg: dict,
+    cfg_key: str,
+    default: Optional[str] = None,
+    interactive: bool = False,
+) -> str:
+    if cli_value:
+        return cli_value
+    if cfg_key in cfg and cfg[cfg_key]:
+        return str(cfg[cfg_key])
+    if default:
+        return default
+    if interactive:
+        return input(f"{label}: ").strip()
+    raise SystemExit(
+        f"Falta {label}. Añádelo a install_config.json o pásalo como argumento --{cfg_key.replace('_', '-')}."
+    )
 
 
 def main() -> None:
@@ -258,28 +301,53 @@ def main() -> None:
     install_root = INSTALL_ROOT
     source_root = Path(__file__).resolve().parent.parent
 
+    config = load_config()
     log(f"Instalando en {install_root}")
+    log_step(1, "Preparar Python portátil")
     python_exe = ensure_portable_python(install_root)
+
+    log_step(2, "Copiar archivos del bridge")
     copy_project_files(source_root, install_root)
+
+    log_step(3, "Instalar dependencias")
     pip_install(python_exe, install_root / "requirements.txt")
 
+    log_step(4, "Detectar carpeta AddOns de WoW")
     detected_paths = detect_wow_addons_paths()
     default_addons_path = detected_paths[0] if detected_paths else None
     wow_addons_path = Path(
-        prompt_if_missing(
+        resolve_value(
             "Ruta AddOns de WoW",
-            args.wow_path or (str(default_addons_path) if default_addons_path else None),
+            args.wow_path,
+            config,
+            "wow_path",
+            default=str(default_addons_path) if default_addons_path else None,
+            interactive=args.interactive,
         )
     ).expanduser()
 
+    log_step(5, "Instalar addon Guild-Command-Center")
     install_addon(wow_addons_path)
-    web_api_url = prompt_if_missing("WEB_API_URL", args.web_api_url or "")
-    web_api_key = prompt_if_missing("WEB_API_KEY", args.web_api_key or "")
+
+    web_api_url = resolve_value(
+        "WEB_API_URL", args.web_api_url, config, "web_api_url", interactive=args.interactive
+    )
+    web_api_key = resolve_value(
+        "WEB_API_KEY", args.web_api_key, config, "web_api_key", interactive=args.interactive
+    )
+
+    log_step(6, "Guardar configuración .env")
     write_env_file(install_root, wow_addons_path, web_api_url, web_api_key)
+
+    log_step(7, "Crear lanzadores (UI oculta)")
     create_start_scripts(install_root, python_exe)
 
     if not args.no_startup:
+        log_step(8, "Registrar inicio automático")
         register_startup(install_root)
+    else:
+        log("Se omitió el inicio automático (--no-startup)")
+
     log("Instalación completada. El bridge se ejecutará en segundo plano en el próximo inicio.")
 
 
