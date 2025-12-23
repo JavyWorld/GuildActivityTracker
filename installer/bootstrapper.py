@@ -54,6 +54,7 @@ STARTUP_DIR = (
     / "Programs"
     / "Startup"
 )
+DESKTOP_DIR = Path(os.environ.get("USERPROFILE", "")) / "Desktop"
 
 
 def log(msg: str) -> None:
@@ -126,14 +127,16 @@ def copy_project_files(
 ) -> None:
     install_root.mkdir(parents=True, exist_ok=True)
 
-    # OJO: credentials.json contiene credenciales de Google. Si piensas distribuir esto
-    # a otras personas, lo recomendable es NO copiarlo y usar un modo "web-only".
-    files_to_copy: List[Path] = [
+    required_files: List[Path] = [
         source_root / "guild_activity_bridge.py",
         source_root / "bridge_ui.py",
         source_root / "requirements.txt",
+    ]
+
+    # OJO: credentials.json contiene credenciales de Google. Si piensas distribuir esto
+    # a otras personas, lo recomendable es NO copiarlo y usar un modo "web-only".
+    files_to_copy: List[Path] = required_files + [
         source_root / "credentials.json",
-        source_root / "iniciar.bat",
     ]
     if extras:
         files_to_copy.extend(extras)
@@ -149,6 +152,11 @@ def copy_project_files(
                 shutil.copy2(path, dest)
             log(f"Copiado {path.name} -> {dest}")
         else:
+            if path in required_files:
+                raise SystemExit(
+                    f"Falta el archivo obligatorio {path.name} en el repo origen ({source_root}). "
+                    "El instalador se detiene para evitar un runtime roto (ej. ModuleNotFoundError)."
+                )
             log(f"Advertencia: {path.name} no existe en source_root ({source_root}).")
 
     media_src = source_root / "media"
@@ -300,6 +308,22 @@ def create_start_scripts(install_root: Path, python_exe: Path) -> None:
     )
     log(f"Creado {launcher}")
 
+    iniciar = install_root / "iniciar.bat"
+    iniciar.write_text(
+        textwrap.dedent(
+            f"""
+            @echo off
+            echo Iniciando Guild Activity Bridge (runtime portátil)...
+            cd /d "{install_root}"
+            "{python_exe}" -u -B guild_activity_bridge.py
+            pause
+            """
+        ).strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    log(f"Creado {iniciar} (usa el Python portátil)")
+
 
 def register_startup(install_root: Path) -> None:
     if not STARTUP_DIR.exists():
@@ -310,6 +334,120 @@ def register_startup(install_root: Path) -> None:
     src = install_root / "start_bridge_hidden.vbs"
     shutil.copy2(src, shortcut)
     log(f"Autostart configurado: {shortcut}")
+
+
+def write_verify_script(install_root: Path, addons_path: Path, python_exe: Path) -> Path:
+    verify = install_root / "verify_install.bat"
+    verify.write_text(
+        textwrap.dedent(
+            rf"""
+            @echo off
+            setlocal enabledelayedexpansion
+            echo ==========================================
+            echo   GAT Bridge - Verificar Instalacion
+            echo ==========================================
+            echo.
+            set ROOT=%~dp0
+            echo Install root: %ROOT%
+            echo.
+
+            set OK=1
+            call :CHECK "guild_activity_bridge.py"
+            call :CHECK "bridge_ui.py"
+            call :CHECK "requirements.txt"
+            call :CHECK ".env"
+            call :CHECK "start_bridge.bat"
+            call :CHECK "start_bridge_hidden.vbs"
+            call :CHECK "iniciar.bat"
+
+            echo.
+            if exist "{python_exe}" (
+              echo OK: Python portátil encontrado: {python_exe}
+            ) else (
+              echo MISSING: Python portátil (python.exe)
+              set OK=0
+            )
+
+            echo.
+            set "ADDONS_PATH={addons_path}"
+            if exist "%%ADDONS_PATH%%\\GuildActivityTracker" (
+              echo OK: Addon instalado: %%ADDONS_PATH%%\\GuildActivityTracker
+            ) else (
+              echo WARN: No veo el addon en: %%ADDONS_PATH%%\\GuildActivityTracker
+              set OK=0
+            )
+
+            echo.
+            if "!OK!"=="1" (
+              echo RESULTADO: OK - Instalacion parece correcta.
+            ) else (
+              echo RESULTADO: FAIL - Faltan cosas o algo no quedo bien.
+              echo Revisa el log: %ROOT%installer_log.txt
+            )
+            echo.
+            pause
+            exit /b
+
+            :CHECK
+            if exist "%ROOT%%~1" (
+              echo OK: %~1
+            ) else (
+              echo MISSING: %~1
+              set OK=0
+            )
+            exit /b
+            """
+        ).strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    log(f"Creado {verify}")
+    return verify
+
+
+def _remove_old_lnk_shortcuts(desktop: Path) -> None:
+    stale_names = [
+        "GAT Bridge - Start (Visible).lnk",
+        "GAT Bridge - Start (Hidden).lnk",
+        "GAT Bridge - Verify Install.lnk",
+        "GAT Bridge - Open Folder.lnk",
+        "GAT Bridge - Open Install Log.lnk",
+    ]
+    for name in stale_names:
+        candidate = desktop / name
+        if candidate.exists():
+            try:
+                candidate.unlink()
+                log(f"Eliminado acceso directo antiguo: {candidate}")
+            except Exception as exc:
+                log(f"No pude eliminar {candidate}: {exc}")
+
+
+def create_desktop_shortcuts(install_root: Path, verify_script: Path) -> None:
+    desktop = DESKTOP_DIR
+    if not str(desktop) or str(desktop) == "." or not desktop.exists():
+        log(f"No se encontró escritorio en {desktop}. Se omiten accesos directos.")
+        return
+
+    desktop.mkdir(parents=True, exist_ok=True)
+    _remove_old_lnk_shortcuts(desktop)
+
+    start_bat = install_root / "start_bridge.bat"
+    start_vbs = install_root / "start_bridge_hidden.vbs"
+    log_path = install_root / "installer_log.txt"
+
+    shortcuts = {
+        "GAT Bridge - Start (Visible).cmd": f'@echo off\r\ncmd /k ""{start_bat}""\r\n',
+        "GAT Bridge - Start (Hidden).cmd": f'@echo off\r\nwscript.exe "{start_vbs}"\r\n',
+        "GAT Bridge - Verify Install.cmd": f'@echo off\r\ncmd /k ""{verify_script}""\r\n',
+        "GAT Bridge - Open Folder.cmd": f'@echo off\r\nexplorer.exe "{install_root}"\r\n',
+        "GAT Bridge - Open Install Log.cmd": f'@echo off\r\nnotepad.exe "{log_path}"\r\n',
+    }
+
+    for name, content in shortcuts.items():
+        path = desktop / name
+        path.write_text(content, encoding="utf-8")
+        log(f"Creado acceso directo: {path}")
 
 
 def parse_args() -> argparse.Namespace:
@@ -438,14 +576,18 @@ def main() -> None:
 
     write_env_file(install_root, wow_addon_path_value, web_api_url, web_api_key)
 
-    log_step(7, "Crear lanzadores (UI oculta)")
+    log_step(7, "Crear lanzadores (UI oculta + iniciar.bat portátil)")
     create_start_scripts(install_root, python_exe)
+    verify_script = write_verify_script(install_root, wow_addons_path, python_exe)
 
     if not args.no_startup:
         log_step(8, "Registrar inicio automático")
         register_startup(install_root)
     else:
         log("Se omitió el inicio automático (--no-startup)")
+
+    log_step(9, "Crear accesos directos en el escritorio (sin duplicados .lnk/.cmd)")
+    create_desktop_shortcuts(install_root, verify_script)
 
     log("Instalación completada. El bridge se ejecutará en segundo plano en el próximo inicio.")
 
