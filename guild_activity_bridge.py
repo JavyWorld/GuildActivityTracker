@@ -381,6 +381,8 @@ class GuildActivityBridge:
         self._ui_activity = "En espera"
         self._ui_progress = "--"
         self._ui_queue_note = "vacía"
+        self._console_hwnd = None
+        self._console_visible = True
 
         self._session = requests.Session()
         self._session.headers.update({"X-API-Key": self.config.web_api_key, "Content-Type": "application/json"})
@@ -393,12 +395,16 @@ class GuildActivityBridge:
         self._stop_event = threading.Event()
         self._force_full_roster = threading.Event()
         self._force_reason = "manual"
+        self._console_toggle_available = self._init_console_window_state()
         self.ui = BridgeUI(
             self.config.enable_ui,
             self.config.ui_icon_path,
             on_full_roster=lambda: self.request_full_roster("manual-ui"),
             on_exit=self.stop,
+            on_toggle_console=self.toggle_console_visibility if self._console_toggle_available else None,
+            console_visible=self._console_visible,
         )
+        self._hide_console_window()
 
 
     # =========================
@@ -579,6 +585,54 @@ class GuildActivityBridge:
             return f"{pending} pendiente(s)" if pending else "vacía"
         except Exception:
             return "desconocida"
+
+    def _init_console_window_state(self) -> bool:
+        if os.name != "nt":
+            self._console_visible = False
+            return False
+        try:
+            import ctypes
+
+            self._console_hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+            self._console_visible = bool(self._console_hwnd)
+            return bool(self._console_hwnd)
+        except Exception:
+            self._console_hwnd = None
+            self._console_visible = False
+            return False
+
+    def _set_console_visibility(self, visible: bool):
+        if os.name != "nt" or not self._console_hwnd:
+            return
+        try:
+            import ctypes
+
+            SW_HIDE = 0
+            SW_SHOW = 5
+            ctypes.windll.user32.ShowWindow(self._console_hwnd, SW_SHOW if visible else SW_HIDE)
+            if visible:
+                ctypes.windll.user32.SetForegroundWindow(self._console_hwnd)
+            self._console_visible = visible
+            self.ui.set_console_visible(self._console_visible)
+        except Exception:
+            pass
+
+    def _hide_console_window(self):
+        if not self._console_toggle_available:
+            return
+        if self._console_visible:
+            self._set_console_visibility(False)
+
+    def toggle_console_visibility(self) -> bool:
+        if not self._console_toggle_available:
+            return self._console_visible
+        new_state = not self._console_visible
+        self._set_console_visibility(new_state)
+        if new_state:
+            self._set_ui_activity("Consola mostrada", level="info")
+        else:
+            self.ui.push_log("Consola oculta", level="info")
+        return self._console_visible
 
     def _set_ui_activity(self, message: str, progress: str = "--", level: str = "info"):
         self._ui_activity = message

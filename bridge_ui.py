@@ -38,12 +38,15 @@ class BridgeUI:
         icon_path: str,
         on_full_roster: Optional[callable] = None,
         on_exit: Optional[callable] = None,
+        on_toggle_console: Optional[callable] = None,
         theme: Optional[UITheme] = None,
+        console_visible: bool = True,
     ):
         self.enabled = enabled and TK_AVAILABLE
         self.icon_path = icon_path
         self.on_full_roster = on_full_roster
         self.on_exit = on_exit
+        self.on_toggle_console = on_toggle_console
         self.theme = theme or UITheme()
         self.root: Optional["tk.Tk"] = None if tk is None else (tk.Tk() if self.enabled else None)
         self.queue: "queue.Queue[Dict[str, str]]" = queue.Queue()
@@ -51,6 +54,8 @@ class BridgeUI:
         self.activity_var: Optional["tk.StringVar"] = None
         self.progress_var: Optional["tk.StringVar"] = None
         self.log_widget: Optional["tk.Text"] = None
+        self.console_button_text: Optional["tk.StringVar"] = None
+        self.console_visible = console_visible
 
         if not self.enabled or self.root is None:
             return
@@ -149,6 +154,23 @@ class BridgeUI:
             padx=10,
             pady=4,
         ).pack(side="left", padx=12)
+
+        if self.on_toggle_console:
+            self.console_button_text = tk.StringVar(
+                value="Ocultar consola" if self.console_visible else "Mostrar consola"
+            )
+            tk.Button(
+                controls,
+                textvariable=self.console_button_text,
+                command=self._toggle_console,
+                bg=t.button_bg,
+                fg=t.foreground,
+                activebackground=t.button_bg_active,
+                activeforeground=t.accent,
+                relief="groove",
+                padx=10,
+                pady=4,
+            ).pack(side="left", padx=8)
 
         log_frame = tk.LabelFrame(
             self.root,
@@ -270,6 +292,27 @@ class BridgeUI:
                 self.on_full_roster()
             except Exception:
                 pass
+
+    def _toggle_console(self):
+        if not self.on_toggle_console:
+            return
+        try:
+            new_state = self.on_toggle_console()
+            self.set_console_visible(new_state)
+        except Exception:
+            pass
+
+    def set_console_visible(self, visible: bool):
+        self.console_visible = visible
+        if self.console_button_text is not None:
+            label = "Ocultar consola" if visible else "Mostrar consola"
+            if self.root is not None:
+                try:
+                    self.root.after(0, lambda: self.console_button_text.set(label))
+                    return
+                except Exception:
+                    pass
+            self.console_button_text.set(label)
 
     def _handle_close(self):
         if self.on_exit:
