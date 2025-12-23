@@ -383,6 +383,8 @@ class GuildActivityBridge:
         self._ui_queue_note = "vacía"
         self._console_hwnd = None
         self._console_visible = True
+        self._autostart_supported = os.name == "nt"
+        self._autostart_enabled = self._detect_autostart_enabled()
 
         self._session = requests.Session()
         self._session.headers.update({"X-API-Key": self.config.web_api_key, "Content-Type": "application/json"})
@@ -402,6 +404,9 @@ class GuildActivityBridge:
             on_full_roster=lambda: self.request_full_roster("manual-ui"),
             on_exit=self.stop,
             on_toggle_console=self.toggle_console_visibility if self._console_toggle_available else None,
+            on_toggle_autostart=self.toggle_autostart if self._autostart_supported else None,
+            autostart_available=self._autostart_supported,
+            autostart_enabled=self._autostart_enabled,
             console_visible=self._console_visible,
         )
         self._hide_console_window()
@@ -461,6 +466,12 @@ class GuildActivityBridge:
         logger.info(f"Vigilando: {self.config.wow_addon_path}")
         self._check_latest_version()
         self._start_command_listener()
+
+        if self._autostart_supported:
+            status = "habilitado" if self._autostart_enabled else "deshabilitado"
+            logger.info(f"Inicio automático en Windows: {status} (configurable desde la UI)")
+        else:
+            logger.info("Inicio automático solo disponible en Windows (se omitirá en este sistema).")
 
         if self.ui.enabled and self.ui.root is not None:
             worker = threading.Thread(target=self._run_loop, daemon=True)
@@ -585,6 +596,72 @@ class GuildActivityBridge:
             return f"{pending} pendiente(s)" if pending else "vacía"
         except Exception:
             return "desconocida"
+
+    def _startup_script_path(self) -> Optional[str]:
+        if os.name != "nt":
+            return None
+        appdata = os.getenv("APPDATA")
+        if not appdata:
+            return None
+        return os.path.join(
+            appdata, "Microsoft", "Windows", "Start Menu", "Programs", "Startup", "GuildActivityBridgeStartup.bat"
+        )
+
+    def _detect_autostart_enabled(self) -> bool:
+        path = self._startup_script_path()
+        return bool(path and os.path.isfile(path))
+
+    def _preferred_python_command(self) -> str:
+        if os.name != "nt":
+            return sys.executable
+        exe = sys.executable
+        if exe.lower().endswith("python.exe"):
+            candidate = exe[:-10] + "pythonw.exe"
+            if os.path.isfile(candidate):
+                return candidate
+        return exe
+
+    def _set_autostart(self, enable: bool) -> bool:
+        if not self._autostart_supported:
+            return False
+        path = self._startup_script_path()
+        if not path:
+            logger.warning(f"{Fore.YELLOW}No se encontró la carpeta de inicio automático (APPDATA).")
+            return False
+        try:
+            if enable:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                python_cmd = self._preferred_python_command()
+                script_path = os.path.abspath(__file__)
+                lines = [
+                    "@echo off",
+                    "setlocal",
+                    f"cd /d \"{os.path.dirname(script_path)}\"",
+                    f"start \"\" /min \"{python_cmd}\" \"{script_path}\"",
+                    "endlocal",
+                ]
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write("\r\n".join(lines) + "\r\n")
+                self._autostart_enabled = True
+                self.ui.push_log("Inicio automático habilitado: el bridge se abrirá al iniciar Windows.", level="success")
+            else:
+                if os.path.isfile(path):
+                    os.remove(path)
+                self._autostart_enabled = False
+                self.ui.push_log("Inicio automático deshabilitado.", level="info")
+            self.ui.set_autostart_enabled(self._autostart_enabled)
+            return True
+        except Exception as e:
+            logger.warning(f"{Fore.YELLOW}No pude actualizar inicio automático: {e}")
+            return False
+
+    def toggle_autostart(self, enable: bool) -> bool:
+        if not self._autostart_supported:
+            return False
+        success = self._set_autostart(enable)
+        if not success:
+            self.ui.push_log("No se pudo cambiar el inicio automático. Revisa permisos.", level="warn")
+        return success
 
     def _init_console_window_state(self) -> bool:
         if os.name != "nt":

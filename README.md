@@ -38,6 +38,27 @@ Este script en Python monitorea en tiempo real el archivo `SavedVariables` de tu
 
 ## 📦 Instalación
 
+### Opción 1: Instalador todo-en-uno (Windows, sin Python)
+
+1. Empaqueta `installer/bootstrapper.py` como `.exe` con PyInstaller (ejemplo):
+   ```bash
+   pyinstaller --onefile installer/bootstrapper.py
+   ```
+   El ejecutable resultante puede compartirse a cualquier PC con Windows.
+
+2. En el equipo de destino, ejecuta el `.exe` y sigue los pocos prompts si no se detecta
+   automáticamente la ruta de AddOns o las credenciales. El instalador:
+   - Descarga un **Python portátil** y las dependencias del bridge.
+   - Copia los archivos del bridge a `%LOCALAPPDATA%\GuildActivityBridge`.
+   - Descarga e instala el addon **Guild-Command-Center** desde GitHub en la carpeta de AddOns.
+   - Genera el `.env` con `WEB_API_URL`, `WEB_API_KEY` y `WOW_ADDON_PATH`.
+   - Crea un lanzador oculto y lo registra en **Inicio de Windows** (puedes omitirlo con `--no-startup`).
+
+3. Tras reiniciar Windows, el bridge quedará en segundo plano esperando los cambios del addon; no es
+   necesario abrir la consola.
+
+### Opción 2: Instalación manual
+
 1. **Clonar el repositorio:**
 ```bash
 git clone https://github.com/tu-usuario/guild-activity-bridge.git
