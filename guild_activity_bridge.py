@@ -21,7 +21,7 @@ import json
 import re
 import math
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Tuple, Optional, Iterable
 
@@ -59,26 +59,104 @@ DEFAULT_STATS_BATCH_SIZE = int(os.getenv("STATS_BATCH_SIZE", "80"))
 DEFAULT_TZ = os.getenv("LOCAL_TIMEZONE", "America/New_York")
 
 STATE_FILENAME = os.getenv("BRIDGE_STATE_FILE", "gat_bridge_state.json")
+LOCAL_QUEUE_FILE = os.getenv("UPLOAD_QUEUE_FILE", "upload_queue.jsonl")
+UPLOADER_VERSION = "43.0"
 
 
 @dataclass
 class BridgeState:
     last_uploaded_stats_ts: int = 0
     last_web_session_id: str = ""
+    roster_snapshot: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
     @staticmethod
     def from_dict(d: Dict[str, Any]) -> "BridgeState":
         return BridgeState(
             last_uploaded_stats_ts=int(d.get("last_uploaded_stats_ts", 0) or 0),
             last_web_session_id=str(d.get("last_web_session_id", "") or ""),
+            roster_snapshot=d.get("roster_snapshot", {}) if isinstance(d.get("roster_snapshot", {}), dict) else {},
         )
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "last_uploaded_stats_ts": int(self.last_uploaded_stats_ts),
             "last_web_session_id": str(self.last_web_session_id or ""),
+            "roster_snapshot": self.roster_snapshot,
         }
-        return {"last_uploaded_stats_ts": int(self.last_uploaded_stats_ts)}
+
+
+class LocalUploadQueue:
+    def __init__(self, path: str):
+        self.path = path
+
+    def _ensure_dir(self):
+        base = os.path.dirname(self.path)
+        if base and not os.path.isdir(base):
+            os.makedirs(base, exist_ok=True)
+
+    def enqueue(self, payload: Dict[str, Any], purpose: str):
+        try:
+            self._ensure_dir()
+            record = {
+                "ts": int(time.time()),
+                "purpose": purpose,
+                "payload": payload,
+            }
+            with open(self.path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        except Exception as e:
+            logger.warning(f"No pude guardar en cola local: {e}")
+
+    def load_entries(self) -> List[Dict[str, Any]]:
+        entries: List[Dict[str, Any]] = []
+        if not os.path.isfile(self.path):
+            return entries
+        try:
+            with open(self.path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        entries.append(json.loads(line))
+                    except Exception:
+                        continue
+        except Exception as e:
+            logger.warning(f"No pude leer cola local: {e}")
+        return entries
+
+    def rewrite(self, entries: List[Dict[str, Any]]):
+        try:
+            self._ensure_dir()
+            tmp = self.path + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                for e in entries:
+                    f.write(json.dumps(e, ensure_ascii=False) + "\n")
+            os.replace(tmp, self.path)
+        except Exception as e:
+            logger.warning(f"No pude reescribir cola local: {e}")
+
+    def flush(self, sender):
+        entries = self.load_entries()
+        if not entries:
+            return
+        remaining: List[Dict[str, Any]] = []
+        logger.info(f"{Fore.CYAN}Procesando cola local: {len(entries)} pendientes...")
+        for entry in entries:
+            payload = entry.get("payload", {})
+            purpose = entry.get("purpose", "queued upload")
+            try:
+                sender(payload, purpose=purpose, allow_queue=False)
+            except Exception as e:
+                logger.warning(f"No pude re-subir payload en cola ({purpose}): {e}")
+                remaining.append(entry)
+        if remaining:
+            self.rewrite(remaining)
+        else:
+            try:
+                os.remove(self.path)
+            except Exception:
+                pass
 
 
 class Config:
@@ -98,8 +176,8 @@ class Config:
         self.worksheet_mythic = os.getenv('GOOGLE_SHEET_WORKSHEET_MYTHIC', 'M+ Score')
 
         # WoW SavedVariables file path (GuildActivityTracker.lua)
-        raw_path = os.getenv('WOW_ADDON_PATH', '')
-        self.wow_addon_path = os.path.normpath(os.path.expandvars(raw_path))
+        raw_path = os.getenv('WOW_ADDON_PATH', '').strip()
+        self.wow_addon_path = os.path.normpath(os.path.expandvars(raw_path)) if raw_path else ""
 
         # Realm default para normalizar nombres (si el roster viene sin "-Reino")
         self.default_realm = os.getenv("GUILD_REALM", os.getenv("DEFAULT_REALM", "")).replace(" ", "")
@@ -126,7 +204,12 @@ class Config:
 
     def _validate(self):
         if not self.wow_addon_path or self.wow_addon_path == '.':
-            raise ValueError("Error en WOW_ADDON_PATH: está vacío o inválido.")
+            detected = self._auto_detect_wow_addon_path()
+            if detected:
+                self.wow_addon_path = detected
+                logger.info(f"{Fore.GREEN}Detectado GuildActivityTracker.lua en: {self.wow_addon_path}")
+            else:
+                raise ValueError("Error en WOW_ADDON_PATH: está vacío o inválido. Define la ruta en .env o como variable de entorno, o coloca GuildActivityTracker.lua en la ubicación estándar.")
 
         # Credenciales: mucha gente las guarda como 'credentials' sin extensión.
         if not os.path.isfile(self.credentials_path):
@@ -142,15 +225,75 @@ class Config:
             logger.warning(f"{Fore.YELLOW}AVISO: Archivo LUA no encontrado en {self.wow_addon_path}. "
                            f"El bridge quedará vigilando hasta que exista.")
 
+    def _auto_detect_wow_addon_path(self) -> str:
+        """
+        Busca GuildActivityTracker.lua en las rutas comunes de WoW para evitar fallar
+        cuando WOW_ADDON_PATH no está configurado. Devuelve la primera coincidencia.
+        """
+
+        candidates = []
+        home = os.path.expanduser("~")
+
+        def _add_base(base_root: str):
+            if base_root and base_root not in candidates:
+                candidates.append(base_root)
+
+        # Intentos más comunes
+        _add_base(os.path.join(home, "Documents", "World of Warcraft"))
+        _add_base(os.path.join(home, "World of Warcraft"))
+
+        if os.name == "nt":
+            userprofile = os.getenv("USERPROFILE", home)
+            _add_base(os.path.join(userprofile, "Documents", "World of Warcraft"))
+            _add_base(os.path.join(userprofile, "AppData", "Roaming", "World of Warcraft"))
+            _add_base(os.path.join(userprofile, "AppData", "Local", "World of Warcraft"))
+
+        flavors = ["", "_retail_", "_classic_", "_classic_era_", "_ptr_", "_beta_"]
+
+        fallback = ""
+
+        for base in candidates:
+            for flavor in flavors:
+                wow_root = os.path.join(base, flavor) if flavor else base
+                account_root = os.path.join(wow_root, "WTF", "Account")
+                if not os.path.isdir(account_root):
+                    continue
+                try:
+                    for account in os.listdir(account_root):
+                        saved_vars = os.path.join(account_root, account, "SavedVariables")
+                        candidate_file = os.path.join(saved_vars, "GuildActivityTracker.lua")
+
+                        # Si ya existe el archivo, úsalo.
+                        if os.path.isfile(candidate_file):
+                            return os.path.normpath(candidate_file)
+
+                        # Si no existe, guarda el primer SavedVariables válido como fallback.
+                        if os.path.isdir(saved_vars) and not fallback:
+                            fallback = os.path.normpath(candidate_file)
+                except Exception:
+                    continue
+
+        return fallback
+
 
 class GuildActivityBridge:
     def __init__(self, config: Config):
         self.config = config
         self.lua_parser = slpp.SLPP()
         self.last_mtime = 0
+        self.health = {
+            "last_upload_ok": None,
+            "last_parse_ok": None,
+            "last_latency_ms": None,
+            "last_payload_size": None,
+            "sheets_sync": "pending",
+            "version": UPLOADER_VERSION,
+        }
 
         self._session = requests.Session()
         self._session.headers.update({"X-API-Key": self.config.web_api_key, "Content-Type": "application/json"})
+
+        self.local_queue = LocalUploadQueue(os.path.join(os.path.dirname(os.path.abspath(__file__)), LOCAL_QUEUE_FILE))
 
         # Estado persistente (para stats incremental al Web)
         self.state_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), STATE_FILENAME)
@@ -198,6 +341,8 @@ class GuildActivityBridge:
     def start(self):
         logger.info(f"{Fore.GREEN}=== SISTEMA V43.0 (THE RELAY TANK) ===")
         logger.info(f"Vigilando: {self.config.wow_addon_path}")
+        self._check_latest_version()
+        self.local_queue.flush(self._post_to_web_with_retry)
 
         while True:
             try:
@@ -241,6 +386,34 @@ class GuildActivityBridge:
             time.sleep(delay)
         # Si no estabiliza rápido, igual continuamos: /reload suele terminar pronto.
 
+    def _check_latest_version(self):
+        try:
+            base = self.config.web_api_url.rsplit("/api", 1)[0]
+            url = f"{base}/api/uploader/latest"
+            resp = self._session.get(url, timeout=10)
+            if resp.status_code != 200:
+                return
+            data = resp.json()
+            latest = str(data.get("version") or data.get("latest") or "")
+            if latest and latest != UPLOADER_VERSION:
+                logger.warning(f"{Fore.YELLOW}Nueva versión disponible: {latest}. Estás en {UPLOADER_VERSION}.")
+            else:
+                logger.info(f"{Fore.GREEN}Uploader actualizado ({UPLOADER_VERSION}).")
+        except Exception as e:
+            logger.info(f"No se pudo verificar versión más reciente: {e}")
+
+    def _print_health_panel(self):
+        panel = [
+            "=== HEALTH PANEL ===",
+            f"Último parse OK: {self.health.get('last_parse_ok') or 'pendiente'}",
+            f"Último upload OK: {self.health.get('last_upload_ok') or 'pendiente'}",
+            f"Latencia al server: {self.health.get('last_latency_ms') or 's/d'} ms",
+            f"Tamaño payload: {self.health.get('last_payload_size') or 's/d'} bytes",
+            f"Estado Sheets: {self.health.get('sheets_sync')}",
+            f"Versión: {self.health.get('version')}",
+        ]
+        logger.info(" | ".join(panel))
+
     # =========================
     # Procesamiento principal
     # =========================
@@ -272,6 +445,8 @@ class GuildActivityBridge:
                 logger.error("El contenido LUA no decodificó a un diccionario.")
                 return
 
+            self.health["last_parse_ok"] = datetime.now().isoformat()
+
             # =================================================================
             # PASO 1: PROCESAMIENTO UNIFICADO DE DATOS
             # =================================================================
@@ -294,11 +469,15 @@ class GuildActivityBridge:
                 total_msgs = sum(int(m.get('total', 0) or 0) for m in processed_data['members'].values())
                 self._update_history_log(active_count, total_msgs)
                 self._update_dashboard()
+                self.health["sheets_sync"] = "ok"
+            else:
+                self.health["sheets_sync"] = "desactivado"
 
             # =================================================================
             # PASO 3: WEB UPLOAD
             # =================================================================
             if self.config.enable_web_upload:
+                                self.local_queue.flush(self._post_to_web_with_retry)
                                 # Un solo Session ID para TODO en este ciclo (stats + roster/chat)
                                 web_session_id = self._make_upload_session_id()
                                 self.state.last_web_session_id = web_session_id
@@ -314,6 +493,8 @@ class GuildActivityBridge:
 
         except Exception as e:
             logger.error(f"Error procesando archivo: {e}", exc_info=True)
+        finally:
+            self._print_health_panel()
 
     # =========================
     # LUA parsing helpers
@@ -382,6 +563,40 @@ class GuildActivityBridge:
 
     def _short_name(self, full: str) -> str:
         return (full or "").split("-", 1)[0]
+
+    def _build_roster_snapshot(self, roster_members: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+        snapshot: Dict[str, Dict[str, Any]] = {}
+        for name, info in roster_members.items():
+            if not isinstance(info, dict):
+                continue
+            snapshot[name] = {
+                "rank": info.get("rank", "Member"),
+                "lvl": int(info.get("level", 0) or 0),
+                "class": info.get("class", "UNKNOWN"),
+                "lastSeenTS": int(info.get("lastSeenTS", 0) or 0),
+                "lastMessage": info.get("lastMessage", ""),
+            }
+        return snapshot
+
+    def _compute_roster_delta(self, roster_members: Dict[str, Any]):
+        prev = self.state.roster_snapshot or {}
+        current_snapshot = self._build_roster_snapshot(roster_members)
+
+        added: Dict[str, Dict[str, Any]] = {}
+        updated: Dict[str, Dict[str, Any]] = {}
+        removed: List[str] = []
+
+        for name, info in current_snapshot.items():
+            if name not in prev:
+                added[name] = roster_members.get(name, info)
+            elif info != prev.get(name, {}):
+                updated[name] = roster_members.get(name, info)
+
+        for name in prev.keys():
+            if name not in current_snapshot:
+                removed.append(name)
+
+        return added, updated, removed
 
     def _find_chat_entry_for_roster_member(
         self,
@@ -1096,6 +1311,14 @@ class GuildActivityBridge:
             logger.warning("No roster_members para subir a Web.")
             return
 
+        added, updated, removed = self._compute_roster_delta(roster_members)
+        if added or updated or removed:
+            roster_members = {**added, **updated}
+            logger.info(f"{Fore.CYAN}Delta roster -> added: {len(added)}, updated: {len(updated)}, removed: {len(removed)}")
+        else:
+            logger.info(f"{Fore.CYAN}No hay cambios en roster/chat. Nada que subir.")
+            return
+
         all_keys = list(roster_members.keys())
         total_members = len(all_keys)
 
@@ -1144,12 +1367,14 @@ class GuildActivityBridge:
                 "is_final_batch": bool(is_final),
                 "batch_index": int(batch_index),
                 "total_batches": int(total_batches),
+                "removed_members": removed if is_final else [],
 
                 # camelCase (por si tu backend viejo lo usaba)
                 "uploadSessionId": session_id,
                 "isFinalBatch": bool(is_final),
                 "batchIndex": int(batch_index),
                 "totalBatches": int(total_batches),
+                "removedMembers": removed if is_final else [],
 
                 "master_roster": master_roster,
                 "data": chat_data,
@@ -1184,12 +1409,14 @@ class GuildActivityBridge:
                 # NO avanzamos idx; reintentamos mismo lote con batch más chico.
                 time.sleep(1.0)
 
+        self.state.roster_snapshot = self._build_roster_snapshot(processed_data.get("roster_members") or processed_data.get("members") or {})
+        self._save_state()
         logger.info(f"{Fore.GREEN}✔✔ Upload Web Roster/Chat Completado Exitosamente (session {session_id}).")
 
     # -------------------------
     # HTTP helper
     # -------------------------
-    def _post_to_web_with_retry(self, payload: Dict[str, Any], purpose: str = ""):
+    def _post_to_web_with_retry(self, payload: Dict[str, Any], purpose: str = "", allow_queue: bool = True):
         """
         Reintentos fuertes (no abandona fácil).
         Lanza _TooLarge413 si 413 (para que el caller ajuste batch size).
@@ -1200,13 +1427,19 @@ class GuildActivityBridge:
         backoff = 1.0
         max_backoff = 20.0
         attempt = 0
+        max_attempts_before_queue = 5
 
         while True:
             attempt += 1
             try:
+                start = time.time()
                 resp = self._session.post(url, json=payload, headers=headers, timeout=self.config.http_timeout)
+                elapsed_ms = int((time.time() - start) * 1000)
+                self.health["last_latency_ms"] = elapsed_ms
+                self.health["last_payload_size"] = len(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
 
                 if resp.status_code == 200:
+                    self.health["last_upload_ok"] = datetime.now().isoformat()
                     return
 
                 if resp.status_code == 413:
@@ -1228,6 +1461,10 @@ class GuildActivityBridge:
 
                 # 429/5xx/etc: reintentar
                 logger.warning(f"{Fore.YELLOW}Web error {resp.status_code} en {purpose}. Intento {attempt}. Backoff {backoff:.1f}s")
+                if allow_queue and attempt >= max_attempts_before_queue:
+                    self.local_queue.enqueue(payload, purpose)
+                    logger.warning(f"{Fore.MAGENTA}Persisten errores de server ({resp.status_code}). Payload en cola local.")
+                    return
                 time.sleep(backoff)
                 backoff = min(max_backoff, backoff * 1.6)
                 continue
@@ -1236,6 +1473,10 @@ class GuildActivityBridge:
                 raise
             except requests.RequestException as e:
                 logger.warning(f"{Fore.YELLOW}Web conexión falló en {purpose}: {e}. Intento {attempt}. Backoff {backoff:.1f}s")
+                if allow_queue and attempt >= max_attempts_before_queue:
+                    self.local_queue.enqueue(payload, purpose)
+                    logger.warning(f"{Fore.MAGENTA}No hay conexión estable ({purpose}). Payload guardado en cola local para reintento.")
+                    return
                 time.sleep(backoff)
                 backoff = min(max_backoff, backoff * 1.6)
                 continue
