@@ -209,12 +209,7 @@ class Config:
                 self.wow_addon_path = detected
                 logger.info(f"{Fore.GREEN}Detectado GuildActivityTracker.lua en: {self.wow_addon_path}")
             else:
-                prompted = self._prompt_wow_addon_path()
-                if prompted:
-                    self.wow_addon_path = prompted
-                    logger.info(f"{Fore.GREEN}Ruta configurada manualmente: {self.wow_addon_path}")
-                else:
-                    raise ValueError("Error en WOW_ADDON_PATH: está vacío o inválido. Define la ruta en .env o como variable de entorno, o coloca GuildActivityTracker.lua en la ubicación estándar.")
+                raise ValueError("Error en WOW_ADDON_PATH: está vacío o inválido. Define la ruta en .env o como variable de entorno, o coloca GuildActivityTracker.lua en la ubicación estándar.")
 
         # Credenciales: mucha gente las guarda como 'credentials' sin extensión.
         if not os.path.isfile(self.credentials_path):
@@ -230,7 +225,7 @@ class Config:
             logger.warning(f"{Fore.YELLOW}AVISO: Archivo LUA no encontrado en {self.wow_addon_path}. "
                            f"El bridge quedará vigilando hasta que exista.")
 
-    def _auto_detect_wow_addon_path(self, manual_base: Optional[str] = None) -> str:
+    def _auto_detect_wow_addon_path(self) -> str:
         """
         Busca GuildActivityTracker.lua en las rutas comunes de WoW para evitar fallar
         cuando WOW_ADDON_PATH no está configurado. Devuelve la primera coincidencia.
@@ -252,18 +247,8 @@ class Config:
             _add_base(os.path.join(userprofile, "Documents", "World of Warcraft"))
             _add_base(os.path.join(userprofile, "AppData", "Roaming", "World of Warcraft"))
             _add_base(os.path.join(userprofile, "AppData", "Local", "World of Warcraft"))
-            program_files = os.getenv("PROGRAMFILES", os.path.join("C:\\", "Program Files"))
-            program_files_x86 = os.getenv("PROGRAMFILES(X86)", os.path.join("C:\\", "Program Files (x86)"))
-            _add_base(os.path.join(program_files, "World of Warcraft"))
-            _add_base(os.path.join(program_files_x86, "World of Warcraft"))
-            _add_base(os.path.join("C:\\", "World of Warcraft"))
-
-        if manual_base:
-            candidates.insert(0, manual_base)
 
         flavors = ["", "_retail_", "_classic_", "_classic_era_", "_ptr_", "_beta_"]
-
-        fallback = ""
 
         for base in candidates:
             for flavor in flavors:
@@ -275,70 +260,12 @@ class Config:
                     for account in os.listdir(account_root):
                         saved_vars = os.path.join(account_root, account, "SavedVariables")
                         candidate_file = os.path.join(saved_vars, "GuildActivityTracker.lua")
-
-                        # Si ya existe el archivo, úsalo.
                         if os.path.isfile(candidate_file):
                             return os.path.normpath(candidate_file)
-
-                        # Si no existe, guarda el primer SavedVariables válido como fallback.
-                        if os.path.isdir(saved_vars) and not fallback:
-                            fallback = os.path.normpath(candidate_file)
                 except Exception:
                     continue
 
-        return fallback
-
-    def _prompt_wow_addon_path(self) -> str:
-        """
-        UI simple para pedir al usuario la ruta de instalación de WoW cuando la
-        detección automática falla. Permite pegar directamente la ruta al archivo
-        GuildActivityTracker.lua o al directorio raíz del juego.
-        """
-
-        if not sys.stdin.isatty():
-            return ""
-
-        banner = "\n" + "=" * 68 + "\n" + \
-                 " Configuración interactiva - Guild Activity Bridge\n" + \
-                 " No se encontró la ruta a GuildActivityTracker.lua.\n" + \
-                 " Ayúdame indicándome dónde está instalado World of Warcraft.\n" + \
-                 "=" * 68 + "\n"
-        print(banner)
-        print("Pasos:")
-        print(" 1) Abre el explorador y copia la ruta donde está instalado el juego")
-        print("    (ej: C\\\Program Files (x86)\\World of Warcraft o tu carpeta personalizada).")
-        print(" 2) O pega directamente la ruta completa al archivo GuildActivityTracker.lua si ya existe.\n")
-
-        while True:
-            prompt_text = "Ruta de instalación de WoW o al archivo GuildActivityTracker.lua (enter para cancelar): "
-            user_input = input(prompt_text).strip()
-
-            if not user_input:
-                print("Configuración cancelada. Puedes definir WOW_ADDON_PATH en .env más tarde.")
-                return ""
-
-            expanded = os.path.normpath(os.path.expandvars(os.path.expanduser(user_input)))
-
-            if os.path.isfile(expanded) and expanded.lower().endswith(".lua"):
-                return expanded
-
-            if not os.path.isdir(expanded):
-                print(f"No encontré el directorio: {expanded}. Intenta de nuevo.\n")
-                continue
-
-            detected = self._auto_detect_wow_addon_path(manual_base=expanded)
-            if detected:
-                if not os.path.isfile(detected):
-                    print("No encontré GuildActivityTracker.lua todavía, pero usaré esta ruta y esperaré a que se cree:")
-                    print(f"  {detected}\n")
-                    confirm = input("¿Quieres usarla? [S/n]: ").strip().lower()
-                    if confirm in ("", "s", "si", "sí"):
-                        return detected
-                else:
-                    return detected
-
-            print("No pude localizar GuildActivityTracker.lua en la ruta indicada. Verifica e intenta nuevamente.\n")
-
+        return ""
 
 
 class GuildActivityBridge:
