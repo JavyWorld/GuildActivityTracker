@@ -498,6 +498,34 @@ class GuildActivityBridge:
         ]
         logger.info(" | ".join(panel))
 
+    def _check_latest_version(self):
+        try:
+            base = self.config.web_api_url.rsplit("/api", 1)[0]
+            url = f"{base}/api/uploader/latest"
+            resp = self._session.get(url, timeout=10)
+            if resp.status_code != 200:
+                return
+            data = resp.json()
+            latest = str(data.get("version") or data.get("latest") or "")
+            if latest and latest != UPLOADER_VERSION:
+                logger.warning(f"{Fore.YELLOW}Nueva versión disponible: {latest}. Estás en {UPLOADER_VERSION}.")
+            else:
+                logger.info(f"{Fore.GREEN}Uploader actualizado ({UPLOADER_VERSION}).")
+        except Exception as e:
+            logger.info(f"No se pudo verificar versión más reciente: {e}")
+
+    def _print_health_panel(self):
+        panel = [
+            "=== HEALTH PANEL ===",
+            f"Último parse OK: {self.health.get('last_parse_ok') or 'pendiente'}",
+            f"Último upload OK: {self.health.get('last_upload_ok') or 'pendiente'}",
+            f"Latencia al server: {self.health.get('last_latency_ms') or 's/d'} ms",
+            f"Tamaño payload: {self.health.get('last_payload_size') or 's/d'} bytes",
+            f"Estado Sheets: {self.health.get('sheets_sync')}",
+            f"Versión: {self.health.get('version')}",
+        ]
+        logger.info(" | ".join(panel))
+
     # =========================
     # Procesamiento principal
     # =========================
