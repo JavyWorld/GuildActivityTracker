@@ -3,8 +3,7 @@
 """
 Guild Activity Tracker Bridge - Versión 43.0 (THE RELAY TANK)
 Robust bridge between WoW SavedVariables (GuildActivityTrackerDB) and:
-  1) Google Sheets (Members / Activity Logs / History / M+ Score)
-  2) Website API (/api/upload) with session-based chunking
+  1) Website API (/api/upload) with session-based chunking
 
 Principios:
 - NO rompe funciones existentes: mantiene los mismos métodos públicos del V42.
@@ -28,8 +27,6 @@ from typing import Dict, List, Any, Tuple, Optional, Iterable
 
 import requests
 
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 from dotenv import load_dotenv
 import colorama
 from colorama import Fore
@@ -167,15 +164,6 @@ class Config:
     def __init__(self):
         load_dotenv()
 
-        # Google
-        self.credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS', 'credentials.json')
-        self.sheet_name = os.getenv('GOOGLE_SHEET_NAME', 'Guild Activity Tracker')
-        self.worksheet_members = os.getenv('GOOGLE_SHEET_WORKSHEET', 'Members')
-        self.worksheet_stats = os.getenv('GOOGLE_SHEET_WORKSHEET_STATS', 'Activity Logs')
-        self.worksheet_dashboard = os.getenv('GOOGLE_SHEET_WORKSHEET_DASHBOARD', 'DASHBOARD')
-        self.worksheet_history = os.getenv('GOOGLE_SHEET_WORKSHEET_HISTORY', 'History')
-        self.worksheet_mythic = os.getenv('GOOGLE_SHEET_WORKSHEET_MYTHIC', 'M+ Score')
-
         # WoW SavedVariables file path (GuildActivityTracker.lua)
         raw_path = os.getenv('WOW_ADDON_PATH', '').strip()
         self.wow_addon_path = os.path.normpath(os.path.expandvars(raw_path)) if raw_path else ""
@@ -195,7 +183,6 @@ class Config:
 
         # Behavior toggles
         self.enable_web_upload = os.getenv("ENABLE_WEB_UPLOAD", "true").lower() == "true"
-        self.enable_sheets_sync = os.getenv("ENABLE_SHEETS_SYNC", "true").lower() == "true"
         self.enable_stats_incremental_web = os.getenv("ENABLE_STATS_INCREMENTAL_WEB", "true").lower() == "true"
 
         # Safety: si se detecta roster muy chico, NO saltar (guild pequeña). Ajustable:
@@ -216,16 +203,6 @@ class Config:
                     logger.info(f"{Fore.GREEN}Ruta configurada manualmente: {self.wow_addon_path}")
                 else:
                     raise ValueError("Error en WOW_ADDON_PATH: está vacío o inválido. Define la ruta en .env o como variable de entorno, o coloca GuildActivityTracker.lua en la ubicación estándar.")
-
-        # Credenciales: mucha gente las guarda como 'credentials' sin extensión.
-        if not os.path.isfile(self.credentials_path):
-            alt = self.credentials_path
-            if alt.lower().endswith(".json"):
-                alt = alt[:-5]  # quita .json
-            if os.path.isfile(alt):
-                self.credentials_path = alt
-            else:
-                raise FileNotFoundError(f"Faltan credenciales de Google (GOOGLE_SHEETS_CREDENTIALS). Busqué: {self.credentials_path} y {alt}")
 
         if not os.path.isfile(self.wow_addon_path):
             logger.warning(f"{Fore.YELLOW}AVISO: Archivo LUA no encontrado en {self.wow_addon_path}. "
@@ -325,7 +302,7 @@ class Config:
         print(banner)
         print("Pasos:")
         print(" 1) Abre el explorador y copia la ruta donde está instalado el juego")
-        print("    (ej: C\\\Program Files (x86)\\World of Warcraft o tu carpeta personalizada).")
+        print(r"    (ej: C:\\Program Files (x86)\\World of Warcraft o tu carpeta personalizada).")
         print(" 2) O pega directamente la ruta completa al archivo GuildActivityTracker.lua si ya existe.\n")
 
         while True:
@@ -370,7 +347,6 @@ class GuildActivityBridge:
             "last_parse_ok": None,
             "last_latency_ms": None,
             "last_payload_size": None,
-            "sheets_sync": "pending",
             "version": UPLOADER_VERSION,
         }
 
@@ -382,14 +358,6 @@ class GuildActivityBridge:
         # Estado persistente (para stats incremental al Web)
         self.state_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), STATE_FILENAME)
         self.state = self._load_state()
-
-        try:
-            scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-            creds = ServiceAccountCredentials.from_json_keyfile_name(self.config.credentials_path, scope)
-            self.gc = gspread.authorize(creds)
-        except Exception as e:
-            logger.error(f"{Fore.RED}Error Login Google: {e}")
-            raise
 
 
     # =========================
@@ -493,35 +461,6 @@ class GuildActivityBridge:
             f"Último upload OK: {self.health.get('last_upload_ok') or 'pendiente'}",
             f"Latencia al server: {self.health.get('last_latency_ms') or 's/d'} ms",
             f"Tamaño payload: {self.health.get('last_payload_size') or 's/d'} bytes",
-            f"Estado Sheets: {self.health.get('sheets_sync')}",
-            f"Versión: {self.health.get('version')}",
-        ]
-        logger.info(" | ".join(panel))
-
-    def _check_latest_version(self):
-        try:
-            base = self.config.web_api_url.rsplit("/api", 1)[0]
-            url = f"{base}/api/uploader/latest"
-            resp = self._session.get(url, timeout=10)
-            if resp.status_code != 200:
-                return
-            data = resp.json()
-            latest = str(data.get("version") or data.get("latest") or "")
-            if latest and latest != UPLOADER_VERSION:
-                logger.warning(f"{Fore.YELLOW}Nueva versión disponible: {latest}. Estás en {UPLOADER_VERSION}.")
-            else:
-                logger.info(f"{Fore.GREEN}Uploader actualizado ({UPLOADER_VERSION}).")
-        except Exception as e:
-            logger.info(f"No se pudo verificar versión más reciente: {e}")
-
-    def _print_health_panel(self):
-        panel = [
-            "=== HEALTH PANEL ===",
-            f"Último parse OK: {self.health.get('last_parse_ok') or 'pendiente'}",
-            f"Último upload OK: {self.health.get('last_upload_ok') or 'pendiente'}",
-            f"Latencia al server: {self.health.get('last_latency_ms') or 's/d'} ms",
-            f"Tamaño payload: {self.health.get('last_payload_size') or 's/d'} bytes",
-            f"Estado Sheets: {self.health.get('sheets_sync')}",
             f"Versión: {self.health.get('version')}",
         ]
         logger.info(" | ".join(panel))
@@ -532,7 +471,6 @@ class GuildActivityBridge:
     def process_file(self):
         """
         Lee SavedVariables, unifica datos y sincroniza:
-          - Google Sheets
           - Web API (stats incremental + roster/chat por lotes)
         """
         try:
@@ -568,25 +506,8 @@ class GuildActivityBridge:
                 return
 
             # =================================================================
-            # PASO 2: GOOGLE SHEETS
             # =================================================================
-            if self.config.enable_sheets_sync:
-                self._ensure_sheets_exist()
-                self._sync_members_to_sheet(processed_data['members'])
-                if processed_data.get('stats'):
-                    self._sync_stats_to_sheet(processed_data['stats'])
-                if processed_data.get('mythic'):
-                    self._sync_mythic_scores(processed_data['mythic'])
-
-                total_msgs = sum(int(m.get('total', 0) or 0) for m in processed_data['members'].values())
-                self._update_history_log(active_count, total_msgs)
-                self._update_dashboard()
-                self.health["sheets_sync"] = "ok"
-            else:
-                self.health["sheets_sync"] = "desactivado"
-
-            # =================================================================
-            # PASO 3: WEB UPLOAD
+            # PASO 2: WEB UPLOAD
             # =================================================================
             if self.config.enable_web_upload:
                                 self.local_queue.flush(self._post_to_web_with_retry)
@@ -1049,311 +970,6 @@ class GuildActivityBridge:
             return out
 
         return out
-
-    # =========================
-    # GOOGLE SHEETS
-    # =========================
-    def _ensure_sheets_exist(self):
-        try:
-            sh = self.gc.open(self.config.sheet_name)
-
-            # Members, Stats, History
-            for w in [self.config.worksheet_members, self.config.worksheet_stats, self.config.worksheet_history]:
-                try:
-                    sh.worksheet(w)
-                except Exception:
-                    sh.add_worksheet(w, 2000, 10)
-
-            # Mythic
-            try:
-                sh.worksheet(self.config.worksheet_mythic)
-            except Exception:
-                ws = sh.add_worksheet(self.config.worksheet_mythic, 1000, 5)
-                ws.append_row(["Jugador", "Clase", "Spec", "Score", "Update"])
-
-            # Crear header Members si está vacío
-            try:
-                ws = sh.worksheet(self.config.worksheet_members)
-                vals = ws.get_all_values()
-                if not vals:
-                    ws.append_row(["Member", "Rank", "RankIndex", "Total", "MsgsToday", "LastSeen", "LastSeenTS", "LastMessage", "Reserved1", "Reserved2"])
-            except Exception:
-                pass
-
-        except Exception as e:
-            logger.error(f"Error _ensure_sheets_exist: {e}")
-
-    def _sync_members_to_sheet(self, members_data: Dict):
-        """
-        Mantiene la lógica V42 pero:
-          - usa rankIndex real (si viene del chat)
-          - renombra filas huérfanas (Nombre -> Nombre-Reino) cuando es seguro
-          - reduce updates: solo cambia si difiere
-        """
-        try:
-            sh = self.gc.open(self.config.sheet_name)
-            ws = sh.worksheet(self.config.worksheet_members)
-
-            vals = ws.get_all_values()
-            if not vals:
-                # header mínimo
-                ws.append_row(["Member", "Rank", "RankIndex", "Total", "MsgsToday", "LastSeen", "LastSeenTS", "LastMessage", "Reserved1", "Reserved2"])
-                vals = ws.get_all_values()
-
-            # mapa de filas existentes
-            header = vals[0] if vals else []
-            rows = vals[1:] if len(vals) > 1 else []
-
-            # Determinar default realm (mismo que usamos en merge)
-            default_realm = ""
-            try:
-                # si tenemos meta en members_data: no.
-                # Lo inferimos del set de keys:
-                realms = {}
-                for k in members_data.keys():
-                    ks = str(k)
-                    if "-" in ks:
-                        r = ks.split("-", 1)[1]
-                        realms[r] = realms.get(r, 0) + 1
-                if realms:
-                    default_realm = sorted(realms.items(), key=lambda x: (-x[1], x[0]))[0][0]
-            except Exception:
-                pass
-
-            # Map canonical -> rowIndex (2-based)
-            canonical_to_row: Dict[str, int] = {}
-            exact_to_row: Dict[str, int] = {}
-            ambiguous_canonical: set = set()
-
-            for i, r in enumerate(rows):
-                if not r:
-                    continue
-                name_cell = (r[0] if len(r) > 0 else "").strip()
-                if not name_cell:
-                    continue
-                row_idx = i + 2
-                exact_to_row[name_cell] = row_idx
-
-                ck = name_cell
-                if "-" not in ck and default_realm:
-                    ck = f"{ck}-{default_realm}"
-
-                if ck in canonical_to_row:
-                    ambiguous_canonical.add(ck)
-                else:
-                    canonical_to_row[ck] = row_idx
-
-            # Buscar siguiente fila vacía
-            next_row = len(vals) + 1
-
-            updates: List[Dict[str, Any]] = []
-            today_str = datetime.now().strftime("%Y-%m-%d")
-
-            def safe_cell_str(s: Any, limit: int = 2000) -> str:
-                txt = "" if s is None else str(s)
-                if len(txt) > limit:
-                    return txt[:limit]
-                return txt
-
-            # Para comparar cambios, preparamos una cache de valores actuales por row.
-            # Row array: A..J
-            current_by_row: Dict[int, List[str]] = {}
-            for i, r in enumerate(rows):
-                current_by_row[i + 2] = r + [""] * max(0, 10 - len(r))
-
-            # Orden estable por nombre
-            for name in sorted(members_data.keys(), key=lambda x: str(x).lower()):
-                info = members_data[name] if isinstance(members_data[name], dict) else {}
-                canonical_name = str(name)
-
-                msgs_today = 0
-                daily = info.get('daily', {})
-                if isinstance(daily, dict):
-                    try:
-                        msgs_today = int(daily.get(today_str, 0) or 0)
-                    except Exception:
-                        msgs_today = 0
-
-                rank_name = safe_cell_str(info.get('rank', '-') or '-')
-                rank_index = int(info.get('rankIndex', 99) or 99)
-                total = int(info.get('total', 0) or 0)
-                last_seen = safe_cell_str(info.get('lastSeen', '') or '')
-                last_seen_ts = int(info.get('lastSeenTS', 0) or 0)
-                last_msg = safe_cell_str(info.get('lastMessage', '') or '')
-
-                row_data = [rank_name, str(rank_index), str(total), str(msgs_today), last_seen, str(last_seen_ts), last_msg]
-
-                # decidir fila: exact o canonical
-                target_row: Optional[int] = None
-                if canonical_name in exact_to_row:
-                    target_row = exact_to_row[canonical_name]
-                else:
-                    if canonical_name in canonical_to_row and canonical_name not in ambiguous_canonical:
-                        target_row = canonical_to_row[canonical_name]
-
-                if target_row is not None:
-                    # Renombrar A si la fila tenía nombre corto y el canonical tiene reino
-                    current_row = current_by_row.get(target_row, [""] * 10)
-                    current_name = (current_row[0] or "").strip()
-                    # Si el row actual es corto y canonical tiene "-" -> renombrar A
-                    if current_name and "-" not in current_name and "-" in canonical_name:
-                        updates.append({
-                            'range': f"A{target_row}:A{target_row}",
-                            'values': [[canonical_name]]
-                        })
-
-                    # Solo update si cambió algo
-                    current_slice = current_row[1:8]  # B..H
-                    if [str(x) for x in row_data] != [str(x) for x in current_slice]:
-                        updates.append({
-                            'range': f"B{target_row}:H{target_row}",
-                            'values': [row_data]
-                        })
-                else:
-                    # insertar nuevo
-                    updates.append({
-                        'range': f"A{next_row}:J{next_row}",
-                        'values': [[canonical_name] + row_data + ["", ""]]
-                    })
-                    next_row += 1
-
-            # Ejecutar batch_update en chunks (Google a veces limita payload)
-            if updates:
-                chunk_size = 400
-                for i in range(0, len(updates), chunk_size):
-                    ws.batch_update(updates[i:i + chunk_size])
-                logger.info(f"{Fore.GREEN}Sheet Members actualizado ({len(updates)} cambios).")
-
-            ws.update_acell('J1', f'Update: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
-
-        except Exception as e:
-            logger.error(f"Error Sync Sheet Members: {e}", exc_info=True)
-
-    def _sync_stats_to_sheet(self, stats_source: Any):
-        """
-        Acepta stats normalizadas (lista) o legacy.
-        Inserta filas nuevas en "Activity Logs" con A=ts.
-        """
-        try:
-            sh = self.gc.open(self.config.sheet_name)
-            ws = sh.worksheet(self.config.worksheet_stats)
-
-            vals = ws.get_all_values()
-            if not vals:
-                ws.append_row(["Timestamp", "Date", "Time", "Day", "OnlineCount", "HourBucket"])
-                vals = ws.get_all_values()
-
-            exist = {r[0] for i, r in enumerate(vals) if i > 0 and r and len(r) > 0}
-
-            # Convertimos a iterable de (ts, count)
-            rows_to_add: List[List[Any]] = []
-
-            tz = None
-            try:
-                if ZoneInfo:
-                    tz = ZoneInfo(DEFAULT_TZ)
-            except Exception:
-                tz = None
-
-            def add_row(ts: int, count: int):
-                dt = datetime.fromtimestamp(ts, tz=tz) if tz else datetime.fromtimestamp(ts)
-                rows_to_add.append([
-                    str(ts),
-                    dt.strftime("%Y-%m-%d"),
-                    dt.strftime("%H:%M"),
-                    dt.strftime("%A"),
-                    int(count),
-                    dt.strftime("%H:00")
-                ])
-
-            if isinstance(stats_source, dict):
-                for k, v in sorted(stats_source.items(), key=lambda x: int(x[0]) if str(x[0]).isdigit() else 0):
-                    try:
-                        ts = int(k)
-                        if str(ts) not in exist:
-                            add_row(ts, int(v or 0))
-                    except Exception:
-                        pass
-            elif isinstance(stats_source, list):
-                for snap in stats_source:
-                    if not isinstance(snap, dict):
-                        continue
-                    try:
-                        ts = int(snap.get("ts", 0) or 0)
-                        if not ts:
-                            continue
-                        if str(ts) in exist:
-                            continue
-                        count = int(snap.get("onlineCount", 0) or 0)
-                        add_row(ts, count)
-                    except Exception:
-                        pass
-
-            if rows_to_add:
-                # Append en chunks
-                chunk = 400
-                for i in range(0, len(rows_to_add), chunk):
-                    ws.append_rows(rows_to_add[i:i + chunk], value_input_option="USER_ENTERED")
-                logger.info(f"{Fore.GREEN}Activity Logs: {len(rows_to_add)} snapshots añadidos.")
-
-        except Exception as e:
-            logger.error(f"Error Sync Sheet Stats: {e}", exc_info=True)
-
-    def _sync_mythic_scores(self, d):
-        """
-        Mantiene función V42.
-        """
-        try:
-            if not isinstance(d, dict):
-                return
-            sh = self.gc.open(self.config.sheet_name)
-            ws = sh.worksheet(self.config.worksheet_mythic)
-            vals = ws.get_all_values()
-            exist = {r[0]: {'r': i + 1, 's': float(r[3]) if len(r) > 3 and r[3] else 0}
-                     for i, r in enumerate(vals) if i > 0 and r}
-
-            nxt = len(vals) + 1
-            upd = []
-
-            for n, v in d.items():
-                if not isinstance(v, dict):
-                    continue
-                try:
-                    sc = float(v.get('score', 0) or 0)
-                except Exception:
-                    sc = 0
-                if sc <= 0:
-                    continue
-
-                if n in exist:
-                    if sc > exist[n]['s']:
-                        upd.append({'range': f"B{exist[n]['r']}:E{exist[n]['r']}",
-                                    'values': [[v.get('class', '?'), v.get('spec', '?'), sc,
-                                                datetime.now().strftime("%Y-%m-%d %H:%M")]]})
-                else:
-                    upd.append({'range': f"A{nxt}:E{nxt}",
-                                'values': [[n, v.get('class', '?'), v.get('spec', '?'), sc,
-                                            datetime.now().strftime("%Y-%m-%d %H:%M")]]})
-                    nxt += 1
-
-            if upd:
-                for i in range(0, len(upd), 400):
-                    ws.batch_update(upd[i:i + 400])
-        except Exception:
-            pass
-
-    def _update_history_log(self, a, m):
-        try:
-            self.gc.open(self.config.sheet_name).worksheet(self.config.worksheet_history).append_row(
-                [datetime.now().strftime("%Y-%m-%d"), datetime.now().strftime("%H:%M:%S"), int(a), int(m)]
-            )
-        except Exception:
-            pass
-
-    def _update_dashboard(self):
-        # Manteniendo compatibilidad: si tu dashboard se calcula con fórmulas en Sheets,
-        # este método puede quedarse vacío.
-        pass
 
     # =========================
     # WEB UPLOADER (Robusto)
