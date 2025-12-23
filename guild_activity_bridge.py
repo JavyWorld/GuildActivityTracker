@@ -1292,6 +1292,15 @@ class GuildActivityBridge:
                         "lastSeen": last_seen_iso,
                     }
 
+                if total_batches == 1:
+                    session_phase = "final"
+                elif batch_index == 1:
+                    session_phase = "start"
+                elif is_final:
+                    session_phase = "final"
+                else:
+                    session_phase = "chunk"
+
                 payload = {
                     # snake_case (backend)
                     "upload_session_id": session_id,
@@ -1299,6 +1308,7 @@ class GuildActivityBridge:
                     "batch_index": int(batch_index),
                     "total_batches": int(total_batches),
                     "removed_members": removed if is_final and roster_mode in ("delta", "full") else [],
+                    "session_phase": session_phase,
                     "roster_mode": roster_mode,
                     "roster_summary": {
                         "mode": roster_mode,
@@ -1315,6 +1325,7 @@ class GuildActivityBridge:
                     "batchIndex": int(batch_index),
                     "totalBatches": int(total_batches),
                     "removedMembers": removed if is_final and roster_mode in ("delta", "full") else [],
+                    "sessionPhase": session_phase,
                     "rosterMode": roster_mode,
                     "rosterSummary": {
                         "mode": roster_mode,
