@@ -4,7 +4,11 @@
 
 Reimagined by Gemini to be Epic, Modern, and Aesthetic.
 Uses 'customtkinter' for a high-end dashboard look.
-Includes dynamic progress bar visibility, Regex parsing, and Console Toggle.
+Includes:
+- Dynamic progress bar visibility (Stealth Mode)
+- Regex parsing for progress "6/12"
+- Console Toggle logic
+- Brand Logo Integration (media/gat_logo.png)
 """
 import os
 import queue
@@ -13,14 +17,16 @@ import re
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-# Try importing CustomTkinter for the epic look, fall back to standard if missing
+# Try importing CustomTkinter and PIL (Pillow) for image handling
 try:
     import customtkinter as ctk  # type: ignore
+    from PIL import Image        # type: ignore
     import tkinter as tk
     CTK_AVAILABLE = True
 except ImportError:
     import tkinter as tk  # type: ignore
     ctk = None
+    Image = None
     CTK_AVAILABLE = False
 
 
@@ -68,7 +74,7 @@ class BridgeUI:
         self.progress_bar = None
         self.status_label = None
         self.log_widget = None
-        self.btn_console = None # Reference to the console toggle button
+        self.btn_console = None
         
         if not self.enabled:
             return
@@ -85,7 +91,7 @@ class BridgeUI:
             ctk.set_appearance_mode("Dark")
             ctk.set_default_color_theme("dark-blue")
             self.root = ctk.CTk()
-            self.root.geometry("850x620")
+            self.root.geometry("850x640") # Ajustado para acomodar el logo
             self._build_ui_modern()
         else:
             self.root = tk.Tk()
@@ -107,15 +113,43 @@ class BridgeUI:
 
         # 1. Header Section
         header_frame = ctk.CTkFrame(self.root, fg_color="transparent")
-        header_frame.pack(fill="x", padx=20, pady=(20, 10))
+        header_frame.pack(fill="x", padx=20, pady=(25, 10))
+
+        # --- LOGO INTEGRATION ---
+        # Buscamos 'media/gat_logo.png' relativo al script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        logo_file = os.path.join(script_dir, "media", "gat_logo.png")
+        
+        if os.path.exists(logo_file) and Image:
+            try:
+                pil_image = Image.open(logo_file)
+                # Creamos la imagen CTK (tamaño 48x48 para que destaque)
+                self.logo_img = ctk.CTkImage(light_image=pil_image, dark_image=pil_image, size=(48, 48))
+                
+                logo_label = ctk.CTkLabel(header_frame, text="", image=self.logo_img)
+                logo_label.pack(side="left", padx=(0, 15))
+            except Exception as e:
+                print(f"Error loading logo: {e}")
+        # ------------------------
+
+        title_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
+        title_frame.pack(side="left")
 
         title = ctk.CTkLabel(
-            header_frame, 
+            title_frame, 
             text="GUILD TRACKER BRIDGE", 
             font=("Roboto Medium", 24), 
             text_color=t.text_main
         )
-        title.pack(side="left")
+        title.pack(anchor="w")
+        
+        subtitle = ctk.CTkLabel(
+            title_frame,
+            text="Tactical Data Uplink System",
+            font=("Roboto", 11),
+            text_color=t.text_dim
+        )
+        subtitle.pack(anchor="w")
 
         version_badge = ctk.CTkLabel(
             header_frame,
@@ -131,7 +165,7 @@ class BridgeUI:
 
         # 2. Main Dashboard Grid (2x2 Stats)
         grid_frame = ctk.CTkFrame(self.root, fg_color="transparent")
-        grid_frame.pack(fill="x", padx=20, pady=10)
+        grid_frame.pack(fill="x", padx=20, pady=15)
         grid_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
         def create_stat_card(parent, title, key, col):
@@ -198,7 +232,6 @@ class BridgeUI:
         btn_frame = ctk.CTkFrame(ctrl_frame, fg_color="transparent")
         btn_frame.pack(side="right")
 
-        # Toggle Console Button
         if self.on_toggle_console:
             btn_text = "Hide Console" if self.console_visible else "Show Console"
             self.btn_console = ctk.CTkButton(
@@ -210,11 +243,10 @@ class BridgeUI:
                 hover_color="#475569",
                 corner_radius=6,
                 height=32,
-                width=100
+                width=110
             )
             self.btn_console.pack(side="left", padx=(0, 10))
 
-        # Force Sync Button
         btn_force = ctk.CTkButton(
             btn_frame,
             text="FORCE SYNC",
@@ -246,7 +278,6 @@ class BridgeUI:
     def _build_ui_legacy(self):
         lbl = tk.Label(self.root, text="Please install 'customtkinter' for the Modern UI", bg="red", fg="white")
         lbl.pack(fill="x")
-        # Legacy fallback logic omitted for brevity as user wants modern
 
     # ---------- LOGIC & UPDATES ----------
     def _drain_queue(self):
