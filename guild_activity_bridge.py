@@ -21,6 +21,10 @@ import json
 import re
 import math
 import uuid
+import threading
+import queue
+import platform
+import importlib.util
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Tuple, Optional, Iterable
@@ -31,6 +35,18 @@ from dotenv import load_dotenv
 import colorama
 from colorama import Fore
 import slpp
+
+psutil_spec = importlib.util.find_spec("psutil")
+if psutil_spec:
+    import psutil  # type: ignore
+else:
+    psutil = None  # type: ignore
+
+tk_spec = importlib.util.find_spec("tkinter")
+if tk_spec:
+    import tkinter as tk  # type: ignore
+else:
+    tk = None  # type: ignore
 
 try:
     from zoneinfo import ZoneInfo  # py3.9+
@@ -173,6 +189,12 @@ class Config:
 
         # Loop
         self.poll_interval = int(os.getenv("POLL_INTERVAL", "5"))
+        self.wow_process_names = [
+            n.strip() for n in os.getenv(
+                "WOW_PROCESS_NAMES", "Wow.exe,Wow-64.exe,WowT.exe,WowClassic.exe"
+            ).split(",")
+            if n.strip()
+        ]
 
         # Web upload
         self.web_api_url = os.getenv("WEB_API_URL", DEFAULT_WEB_API_URL)
@@ -184,6 +206,11 @@ class Config:
         # Behavior toggles
         self.enable_web_upload = os.getenv("ENABLE_WEB_UPLOAD", "true").lower() == "true"
         self.enable_stats_incremental_web = os.getenv("ENABLE_STATS_INCREMENTAL_WEB", "true").lower() == "true"
+        self.enable_ui = os.getenv("ENABLE_UI", "true").lower() == "true"
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.ui_icon_path = os.path.normpath(
+            os.getenv("GAT_ICON_PATH", os.path.join(base_dir, "gat_icon.png"))
+        )
 
         # Safety: si se detecta roster muy chico, NO saltar (guild pequeña). Ajustable:
         self.min_roster_size = int(os.getenv("MIN_ROSTER_SIZE", "1"))
@@ -336,6 +363,115 @@ class Config:
             print("No pude localizar GuildActivityTracker.lua en la ruta indicada. Verifica e intenta nuevamente.\n")
 
 
+class BridgeUI:
+    def __init__(self, enabled: bool, icon_path: str):
+        self.enabled = enabled and tk is not None
+        self.icon_path = icon_path
+        self.root: Optional[tk.Tk] = None if tk is None else (tk.Tk() if self.enabled else None)
+        self.queue: "queue.Queue[Dict[str, str]]" = queue.Queue()
+        self.labels: Dict[str, "tk.StringVar"] = {}
+
+        if not self.enabled or self.root is None:
+            if enabled and tk is None:
+                logger.info("Interfaz gráfica no disponible (tkinter no instalado). Usando modo consola.")
+            return
+
+        self.root.title("Guild Activity Tracker Bridge")
+        self.root.configure(bg="#0f172a")
+        self.root.geometry("520x260")
+        try:
+            if os.path.isfile(self.icon_path):
+                self.root.iconphoto(False, tk.PhotoImage(file=self.icon_path))
+        except Exception:
+            pass
+
+        header = tk.Label(
+            self.root,
+            text="Guild Activity Tracker Bridge",
+            bg="#0f172a",
+            fg="#facc15",
+            font=("Segoe UI", 14, "bold"),
+            anchor="w",
+            padx=10,
+            pady=6,
+        )
+        header.pack(fill="x")
+
+        fields = [
+            ("wow", "Estado WoW"),
+            ("watch", "Archivo vigilado"),
+            ("parse", "Último parse"),
+            ("upload", "Último upload"),
+            ("latency", "Latencia"),
+            ("payload", "Tamaño payload"),
+            ("version", "Versión"),
+        ]
+
+        for key, label in fields:
+            var = tk.StringVar(value=f"{label}: ...")
+            self.labels[key] = var
+            row = tk.Label(
+                self.root,
+                textvariable=var,
+                bg="#0f172a",
+                fg="#e5e7eb",
+                anchor="w",
+                justify="left",
+                font=("Segoe UI", 10),
+                padx=10,
+                pady=2,
+            )
+            row.pack(fill="x")
+
+        footer = tk.Label(
+            self.root,
+            text="Cierra esta ventana para salir del bridge.",
+            bg="#0f172a",
+            fg="#94a3b8",
+            anchor="w",
+            padx=10,
+            pady=8,
+            font=("Segoe UI", 9, "italic"),
+        )
+        footer.pack(fill="x", side="bottom")
+
+        self.root.protocol("WM_DELETE_WINDOW", self.root.quit)
+        self.root.after(400, self._drain_queue)
+
+    def _drain_queue(self):
+        try:
+            while not self.queue.empty():
+                update = self.queue.get_nowait()
+                self._apply(update)
+        finally:
+            if self.root is not None:
+                self.root.after(500, self._drain_queue)
+
+    def _apply(self, update: Dict[str, str]):
+        for key, var in self.labels.items():
+            if key in update:
+                var.set(update[key])
+
+    def start(self):
+        if not self.enabled or self.root is None:
+            return
+        threading.Thread(target=self.root.mainloop, daemon=True).start()
+
+    def update(self, wow_running: bool, health: Dict[str, Any], watch_path: str):
+        if not self.enabled:
+            return
+        status = {
+            "wow": f"Estado WoW: {'Detectado' if wow_running else 'No detectado'}",
+            "watch": f"Archivo vigilado: {watch_path}",
+            "parse": f"Último parse: {health.get('last_parse_ok') or 'pendiente'}",
+            "upload": f"Último upload: {health.get('last_upload_ok') or 'pendiente'}",
+            "latency": f"Latencia: {health.get('last_latency_ms') or 's/d'} ms",
+            "payload": f"Tamaño payload: {health.get('last_payload_size') or 's/d'} bytes",
+            "version": f"Versión: {health.get('version')}",
+        }
+        if self.root is not None:
+            self.queue.put(status)
+
 
 class GuildActivityBridge:
     def __init__(self, config: Config):
@@ -358,6 +494,7 @@ class GuildActivityBridge:
         # Estado persistente (para stats incremental al Web)
         self.state_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), STATE_FILENAME)
         self.state = self._load_state()
+        self.ui = BridgeUI(self.config.enable_ui, self.config.ui_icon_path)
 
 
     # =========================
@@ -387,6 +524,17 @@ class GuildActivityBridge:
         # Un session ID consistente por ciclo de /reload (unifica stats + roster)
         return f"{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:6]}"
 
+    def _is_wow_running(self) -> bool:
+        if psutil is None:
+            return True
+
+        targets = {p.lower(): True for p in self.config.wow_process_names}
+        for proc in psutil.process_iter(["name"]):
+            name = (proc.info.get("name") or "").lower()
+            if name in targets:
+                return True
+        return False
+
     # =========================
     # Loop principal
     # =========================
@@ -394,10 +542,27 @@ class GuildActivityBridge:
         logger.info(f"{Fore.GREEN}=== SISTEMA V43.0 (THE RELAY TANK) ===")
         logger.info(f"Vigilando: {self.config.wow_addon_path}")
         self._check_latest_version()
-        self.local_queue.flush(self._post_to_web_with_retry)
+        self.ui.start()
+
+        last_wow_state: Optional[bool] = None
 
         while True:
             try:
+                wow_running = self._is_wow_running()
+                if wow_running != last_wow_state:
+                    if wow_running:
+                        logger.info("World of Warcraft detectado. Activando monitoreo y cola local.")
+                        self.local_queue.flush(self._post_to_web_with_retry)
+                        self.last_mtime = 0
+                    else:
+                        logger.info("World of Warcraft no está en ejecución. Esperando...")
+                last_wow_state = wow_running
+
+                if not wow_running:
+                    self.ui.update(False, self.health, self.config.wow_addon_path)
+                    time.sleep(self.config.poll_interval)
+                    continue
+
                 if os.path.isfile(self.config.wow_addon_path):
                     current_mtime = os.path.getmtime(self.config.wow_addon_path)
                     if self.last_mtime == 0:
@@ -408,6 +573,7 @@ class GuildActivityBridge:
                         self._wait_for_file_stable(self.config.wow_addon_path)
                         self.last_mtime = current_mtime
                         self.process_file()
+                self.ui.update(True, self.health, self.config.wow_addon_path)
                 time.sleep(self.config.poll_interval)
             except KeyboardInterrupt:
                 logger.info("Cerrando bridge por KeyboardInterrupt.")
@@ -464,6 +630,7 @@ class GuildActivityBridge:
             f"Versión: {self.health.get('version')}",
         ]
         logger.info(" | ".join(panel))
+        self.ui.update(self._is_wow_running(), self.health, self.config.wow_addon_path)
 
     # =========================
     # Procesamiento principal
