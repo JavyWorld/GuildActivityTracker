@@ -476,7 +476,8 @@ class GuildActivityBridge:
         self._console_hwnd = None
         self._console_visible = True
         self._autostart_supported = os.name == "nt"
-        self._autostart_enabled = self._detect_autostart_enabled()
+        detector = getattr(self, "_detect_autostart_enabled", None)
+        self._autostart_enabled = detector() if callable(detector) else False
 
         self._session = requests.Session()
         self._session.headers.update({"X-API-Key": self.config.web_api_key, "Content-Type": "application/json"})
