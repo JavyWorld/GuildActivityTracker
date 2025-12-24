@@ -156,6 +156,9 @@ class ConsoleReporter:
         return
 
 
+
+# Null UI placeholder (headless mode)
+_NullUI = ConsoleReporter  # alias for headless mode / no-UI fallback
 @dataclass
 class BridgeState:
     last_uploaded_stats_ts: int = 0
@@ -292,6 +295,11 @@ class Config:
         self.enable_stats_incremental_web = os.getenv("ENABLE_STATS_INCREMENTAL_WEB", "true").lower() == "true"
 
         self.min_roster_size = int(os.getenv("MIN_ROSTER_SIZE", "1"))
+
+        # Compat: campos usados por versiones previas / logs
+        self.web_url = self.web_api_url
+        self.roster_batch_size = int(os.getenv('ROSTER_BATCH_SIZE', str(self.batch_size)))
+        self.roster_mode = os.getenv('ROSTER_MODE', 'delta').lower().strip() or 'delta'
 
         self._validate()
 
@@ -547,22 +555,22 @@ class GuildActivityBridge:
     # =========================
     # Loop principal
     # =========================
-def start(self):
-    logger.info(f"{Fore.GREEN}=== SISTEMA V{UPLOADER_VERSION} (CONSOLE MODE) ===")
-    logger.info(f"Vigilando SavedVariables: {self.config.wow_addon_path}")
-    logger.info(f"Web endpoint: {self.config.web_url}")
-    logger.info(f"Roster mode: {self.config.roster_mode} | batch_size={self.config.roster_batch_size} | stats_batch_size={self.config.stats_batch_size}")
-    self._check_latest_version()
-    self._start_command_listener()
+    def start(self):
+        logger.info(f"{Fore.GREEN}=== SISTEMA V{UPLOADER_VERSION} (CONSOLE MODE) ===")
+        logger.info(f"Vigilando SavedVariables: {self.config.wow_addon_path}")
+        logger.info(f"Web endpoint: {self.config.web_url}")
+        logger.info(f"Roster mode: {self.config.roster_mode} | batch_size={self.config.roster_batch_size} | stats_batch_size={self.config.stats_batch_size}")
+        self._check_latest_version()
+        self._start_command_listener()
 
-    if self._autostart_supported:
-        status = "habilitado" if self._autostart_enabled else "deshabilitado"
-        logger.info(f"Inicio automático en Windows: {status}")
-    else:
-        logger.info("Inicio automático solo disponible en Windows (omitido).")
+        if self._autostart_supported:
+            status = "habilitado" if self._autostart_enabled else "deshabilitado"
+            logger.info(f"Inicio automático en Windows: {status}")
+        else:
+            logger.info("Inicio automático solo disponible en Windows (omitido).")
 
-    # UI eliminado: corremos siempre en modo consola.
-    self._run_loop()
+        # UI eliminado: corremos siempre en modo consola.
+        self._run_loop()
 
 
     def _start_command_listener(self):
