@@ -36,9 +36,6 @@ PYTHON_EMBED_URL = (
     f"python-{PYTHON_EMBED_VERSION}-embed-amd64.zip"
 )
 
-# Tcl/Tk MSI (para habilitar tkinter en el Python embebido)
-TCLTK_MSI_URL = f"https://www.python.org/ftp/python/{PYTHON_EMBED_VERSION}/amd64/tcltk.msi"
-
 # Install paths
 INSTALL_ROOT = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "GuildActivityBridge"
 LOG_FILE = INSTALL_ROOT / "installer_log.txt"
@@ -197,77 +194,6 @@ def ensure_portable_python(target_dir: Path) -> Path:
 
 
 
-def ensure_tkinter_support(python_dir: Path, python_exe: Optional[Path] = None) -> None:
-    """
-    Habilita tkinter en el Python "embeddable" copiando Tcl/Tk + _tkinter.pyd desde el MSI oficial (tcltk.msi).
-    
-    Nota: tkinter NO se puede instalar via pip; necesita DLLs/runtime de Tcl/Tk. (Por eso usamos tcltk.msi).
-    """
-    try:
-        dlls_dir = python_dir / "DLLs"
-        tcl_dir = python_dir / "tcl"
-        dlls_dir.mkdir(parents=True, exist_ok=True)
-
-        have_pyd = (python_dir / "_tkinter.pyd").exists() or (dlls_dir / "_tkinter.pyd").exists()
-        have_tcl = (tcl_dir / "tcl8.6").exists() and (tcl_dir / "tk8.6").exists()
-        if have_pyd and have_tcl:
-            log("Tkinter ya está presente en el Python portable (Tcl/Tk + _tkinter).")
-            return
-
-        log("Instalando soporte Tkinter (Tcl/Tk) en el Python portable...")
-        with tempfile.TemporaryDirectory() as td:
-            td_path = Path(td)
-            msi_path = td_path / "tcltk.msi"
-            extract_root = td_path / "tcltk_extract"
-            extract_root.mkdir(parents=True, exist_ok=True)
-
-            download_file(TCLTK_MSI_URL, msi_path)
-
-            # Extrae el MSI sin instalar "Python completo" (admin install /a)
-            # msiexec viene en Windows.
-            cmd = ["msiexec", "/a", str(msi_path), "/qn", f"TARGETDIR={str(extract_root)}"]
-            log("Ejecutando: " + " ".join(cmd))
-            subprocess.run(cmd, check=True)
-
-            # Encuentra DLLs (ubicación varía según versión). Buscamos _tkinter.pyd como ancla.
-            tk_pyds = list(extract_root.rglob("_tkinter.pyd"))
-            if not tk_pyds:
-                raise RuntimeError("No encontré _tkinter.pyd dentro de tcltk.msi (extracción falló).")
-
-            src_tk_pyd = tk_pyds[0]
-            src_dlls = src_tk_pyd.parent
-
-            # tcl/ (busca carpeta tcl8.6)
-            tcl8 = list(extract_root.rglob("tcl8.6"))
-            if not tcl8:
-                raise RuntimeError("No encontré la carpeta tcl8.6 dentro de tcltk.msi.")
-            src_tcl_root = tcl8[0].parent  # .../tcl
-
-            # Copiar DLLs necesarias
-            for fname in ["_tkinter.pyd", "tcl86t.dll", "tk86t.dll", "zlib1.dll"]:
-                src = src_dlls / fname
-                if src.exists():
-                    dst = dlls_dir / fname
-                    shutil.copy2(src, dst)
-                    log(f"Copiado: {fname} -> {dst}")
-
-            # Copiar carpeta tcl completa
-            if tcl_dir.exists():
-                shutil.rmtree(tcl_dir, ignore_errors=True)
-            shutil.copytree(src_tcl_root, tcl_dir)
-            log(f"Copiado: tcl -> {tcl_dir}")
-
-        # Quick self-test
-        if python_exe and python_exe.exists():
-            try:
-                out = subprocess.check_output([str(python_exe), "-c", "import tkinter; print(tkinter.TkVersion)"], text=True).strip()
-                log(f"Tkinter OK. TkVersion={out}")
-            except Exception as exc:
-                log(f"WARNING: Tkinter self-test falló: {exc}")
-
-    except Exception as exc:
-        log(f"WARNING: No pude habilitar tkinter automáticamente: {exc}")
-
 def pip_install(python_exe: Path, requirements: Path) -> None:
     log("Instalando dependencias con pip...")
     subprocess.run([str(python_exe), "-m", "pip", "install", "--upgrade", "pip"], check=True)
@@ -364,7 +290,7 @@ def copy_bridge_from_repo(repo_root: Path, install_root: Path) -> None:
     install_root.mkdir(parents=True, exist_ok=True)
 
     # 🔥 Case-insensitive + validación dura
-    required = ["guild_activity_bridge.py", "bridge_ui.py", "requirements.txt"]
+    required = ["guild_activity_bridge.py", "requirements.txt"]
     copied = []
 
     for name in required:
@@ -374,10 +300,6 @@ def copy_bridge_from_repo(repo_root: Path, install_root: Path) -> None:
         shutil.copy2(p, install_root / name)
         copied.append(name)
         log(f"Copiado {name} <- {p}")
-
-    # Asegurar que bridge_ui.py exista (evita el ModuleNotFoundError)
-    if not (install_root / "bridge_ui.py").exists():
-        raise RuntimeError("bridge_ui.py NO quedó en la carpeta de instalación. Abortando para evitar crash.")
 
     # ❌ NO copiar iniciar.bat (causa el error del Microsoft Store python)
     # (Si quieres un botón de inicio, se hace vía shortcuts .cmd creados por el instalador)
@@ -436,7 +358,6 @@ def write_env_file(install_root: Path, wow_addon_path_value: str) -> None:
         WEB_API_URL={WEB_API_URL}
         WEB_API_KEY={WEB_API_KEY}
         WOW_ADDON_PATH="{wow_addon_path_value}"
-        ENABLE_AUTOSTART_UI=true
         """
     ).strip() + "\n"
     env_path.write_text(content, encoding="utf-8")
@@ -451,12 +372,8 @@ def create_start_scripts(install_root: Path, python_exe: Path) -> None:
         setlocal
         cd /d "{install_root}"
 
-        REM Si Tcl/Tk está presente, configura rutas para tkinter
-        set "PYDIR={python_exe.parent}"
-        if exist "%PYDIR%\tcl\tcl8.6" set "TCL_LIBRARY=%PYDIR%\tcl\tcl8.6"
-        if exist "%PYDIR%\tcl\tk8.6" set "TK_LIBRARY=%PYDIR%\tcl\tk8.6"
-
-        "{python_exe}" -u -B guild_activity_bridge.py
+        REM Ejecuta el bridge minimizado en la barra de tareas (logs en consola)
+        start "" /min cmd /c ""{python_exe}" -u -B guild_activity_bridge.py"
         """).strip() + "\n",
         encoding="utf-8",
     )
@@ -540,7 +457,6 @@ def write_verify_script(install_root: Path, wow_addons_path: Path) -> Path:
 
         set OK=1
         call :CHECK "guild_activity_bridge.py"
-        call :CHECK "bridge_ui.py"
         call :CHECK "requirements.txt"
         call :CHECK ".env"
         call :CHECK "start_bridge.bat"
@@ -555,23 +471,6 @@ def write_verify_script(install_root: Path, wow_addons_path: Path) -> Path:
           set OK=0
         )
 
-echo.
-REM --- Tkinter checks (Tcl/Tk runtime) ---
-if exist "%ROOT%python-3.11.9\tcl\tcl8.6" (
-  echo OK: Tcl/Tk runtime presente (tcl\tcl8.6)
-) else (
-  echo WARN: Tcl/Tk NO presente (tkinter puede fallar)
-)
-if exist "%ROOT%python-3.11.9\tcl\tk8.6" (
-  echo OK: Tk runtime presente (tcl\tk8.6)
-) else (
-  echo WARN: Tk runtime NO presente (tkinter puede fallar)
-)
-if exist "%ROOT%python-3.11.9\DLLs\_tkinter.pyd" (
-  echo OK: _tkinter.pyd presente (DLLs\_tkinter.pyd)
-) else (
-  echo WARN: _tkinter.pyd NO presente
-)
         echo.
         set STARTUP=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\{STARTUP_VBS_NAME}
         if exist "%STARTUP%" (
@@ -699,29 +598,26 @@ def main() -> None:
         step(1, "Preparar Python portable + pip")
         python_exe = ensure_portable_python(INSTALL_ROOT)
 
-        step(2, "Habilitar Tkinter (Tcl/Tk) en el Python portable")
-        ensure_tkinter_support(python_exe.parent, python_exe)
-
-        step(3, "Descargar repo del Bridge/Uploader")
+        step(2, "Descargar repo del Bridge/Uploader")
         with tempfile.TemporaryDirectory() as td:
             td_path = Path(td)
             uploader_root = download_and_extract_repo(UPLOADER_ZIP_URL, td_path)
             log(f"Uploader repo extraído: {uploader_root}")
 
-            step(4, "Copiar archivos del Bridge (sin iniciar.bat)")
+            step(3, "Copiar archivos del Bridge (sin iniciar.bat)")
             copy_bridge_from_repo(uploader_root, INSTALL_ROOT)
 
-        step(5, "Instalar dependencias del Bridge (pip)")
+        step(4, "Instalar dependencias del Bridge (pip)")
         pip_install(python_exe, INSTALL_ROOT / "requirements.txt")
 
-        step(6, "Detectar / escoger ruta AddOns de WoW")
+        step(5, "Detectar / escoger ruta AddOns de WoW")
         wow_addons_path = choose_wow_addons_path()
         log(f"WoW AddOns path elegido: {wow_addons_path}")
 
-        step(7, "Instalar Addon como GuildActivityTracker")
+        step(6, "Instalar Addon como GuildActivityTracker")
         install_addon_as_guildactivitytracker(wow_addons_path)
 
-        step(8, "Detectar SavedVariables y escribir .env")
+        step(7, "Detectar SavedVariables y escribir .env")
         savedvars = detect_savedvariables_from_addons_path(wow_addons_path)
         if savedvars:
             wow_addon_path_value = str(savedvars)
@@ -732,16 +628,16 @@ def main() -> None:
 
         write_env_file(INSTALL_ROOT, wow_addon_path_value)
 
-        step(9, "Crear scripts de arranque + verify + summary")
+        step(8, "Crear scripts de arranque + verify + summary")
         create_start_scripts(INSTALL_ROOT, python_exe)
         write_verify_script(INSTALL_ROOT, wow_addons_path)
         write_install_summary(INSTALL_ROOT, wow_addons_path, wow_addon_path_value)
 
-        step(10, "Registrar AutoStart + crear 4 accesos (.cmd) sin duplicados")
+        step(9, "Registrar AutoStart + crear 4 accesos (.cmd) sin duplicados")
         register_startup(INSTALL_ROOT)
         create_desktop_cmds_only(INSTALL_ROOT)
 
-        step(11, "Arrancar Bridge automáticamente (hidden)")
+        step(10, "Arrancar Bridge automáticamente (hidden)")
         vbs = INSTALL_ROOT / "start_bridge_hidden.vbs"
         subprocess.Popen(["wscript.exe", str(vbs)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
