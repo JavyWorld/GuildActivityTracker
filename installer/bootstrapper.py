@@ -36,9 +36,6 @@ PYTHON_EMBED_URL = (
     f"python-{PYTHON_EMBED_VERSION}-embed-amd64.zip"
 )
 
-# Tcl/Tk MSI (para habilitar tkinter en el Python embebido)
-TCLTK_MSI_URL = f"https://www.python.org/ftp/python/{PYTHON_EMBED_VERSION}/amd64/tcltk.msi"
-
 # Install paths
 INSTALL_ROOT = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "GuildActivityBridge"
 LOG_FILE = INSTALL_ROOT / "installer_log.txt"
@@ -196,77 +193,6 @@ def ensure_portable_python(target_dir: Path) -> Path:
     return python_exe
 
 
-
-def ensure_tkinter_support(python_dir: Path, python_exe: Optional[Path] = None) -> None:
-    """
-    Habilita tkinter en el Python "embeddable" copiando Tcl/Tk + _tkinter.pyd desde el MSI oficial (tcltk.msi).
-    
-    Nota: tkinter NO se puede instalar via pip; necesita DLLs/runtime de Tcl/Tk. (Por eso usamos tcltk.msi).
-    """
-    try:
-        dlls_dir = python_dir / "DLLs"
-        tcl_dir = python_dir / "tcl"
-        dlls_dir.mkdir(parents=True, exist_ok=True)
-
-        have_pyd = (python_dir / "_tkinter.pyd").exists() or (dlls_dir / "_tkinter.pyd").exists()
-        have_tcl = (tcl_dir / "tcl8.6").exists() and (tcl_dir / "tk8.6").exists()
-        if have_pyd and have_tcl:
-            log("Tkinter ya está presente en el Python portable (Tcl/Tk + _tkinter).")
-            return
-
-        log("Instalando soporte Tkinter (Tcl/Tk) en el Python portable...")
-        with tempfile.TemporaryDirectory() as td:
-            td_path = Path(td)
-            msi_path = td_path / "tcltk.msi"
-            extract_root = td_path / "tcltk_extract"
-            extract_root.mkdir(parents=True, exist_ok=True)
-
-            download_file(TCLTK_MSI_URL, msi_path)
-
-            # Extrae el MSI sin instalar "Python completo" (admin install /a)
-            # msiexec viene en Windows.
-            cmd = ["msiexec", "/a", str(msi_path), "/qn", f"TARGETDIR={str(extract_root)}"]
-            log("Ejecutando: " + " ".join(cmd))
-            subprocess.run(cmd, check=True)
-
-            # Encuentra DLLs (ubicación varía según versión). Buscamos _tkinter.pyd como ancla.
-            tk_pyds = list(extract_root.rglob("_tkinter.pyd"))
-            if not tk_pyds:
-                raise RuntimeError("No encontré _tkinter.pyd dentro de tcltk.msi (extracción falló).")
-
-            src_tk_pyd = tk_pyds[0]
-            src_dlls = src_tk_pyd.parent
-
-            # tcl/ (busca carpeta tcl8.6)
-            tcl8 = list(extract_root.rglob("tcl8.6"))
-            if not tcl8:
-                raise RuntimeError("No encontré la carpeta tcl8.6 dentro de tcltk.msi.")
-            src_tcl_root = tcl8[0].parent  # .../tcl
-
-            # Copiar DLLs necesarias
-            for fname in ["_tkinter.pyd", "tcl86t.dll", "tk86t.dll", "zlib1.dll"]:
-                src = src_dlls / fname
-                if src.exists():
-                    dst = dlls_dir / fname
-                    shutil.copy2(src, dst)
-                    log(f"Copiado: {fname} -> {dst}")
-
-            # Copiar carpeta tcl completa
-            if tcl_dir.exists():
-                shutil.rmtree(tcl_dir, ignore_errors=True)
-            shutil.copytree(src_tcl_root, tcl_dir)
-            log(f"Copiado: tcl -> {tcl_dir}")
-
-        # Quick self-test
-        if python_exe and python_exe.exists():
-            try:
-                out = subprocess.check_output([str(python_exe), "-c", "import tkinter; print(tkinter.TkVersion)"], text=True).strip()
-                log(f"Tkinter OK. TkVersion={out}")
-            except Exception as exc:
-                log(f"WARNING: Tkinter self-test falló: {exc}")
-
-    except Exception as exc:
-        log(f"WARNING: No pude habilitar tkinter automáticamente: {exc}")
 
 def pip_install(python_exe: Path, requirements: Path) -> None:
     log("Instalando dependencias con pip...")

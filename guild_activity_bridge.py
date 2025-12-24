@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Guild Activity Tracker Bridge - Versión 43.1 (THE RELAY TANK - FIXED)
+Guild Activity Tracker Bridge - Versión 43.1 (Headless TRACE)
 Robust bridge between WoW SavedVariables (GuildActivityTrackerDB) and:
   1) Website API (/api/upload) with session-based chunking
 
@@ -11,10 +11,7 @@ Principios:
 - Subida web resiliente: reintentos fuertes + ajuste automático si hay 413.
 - Evita inflar la DB web: sube snapshots de stats incrementalmente (persistiendo estado local).
 - Normaliza nombres: unifica "Nombre" vs "Nombre-Reino".
-- ✅ FIX: BridgeUI import resiliente aunque el Python embebido no tenga bien _pth
-- ✅ FIX: WEB_API_URL puede venir como base (https://site) y se normaliza a /api/upload
-- ✅ FIX: toggle_autostart compatible con UI tray (callback sin args)
-- ✅ FIX: Autostart VBS alineado al instalador (GuildActivityBridge.vbs)
+- Modo TRACE por consola: sin UI, ventana minimizada y logs verbosos.
 """
 
 import os
@@ -40,10 +37,6 @@ import colorama
 from colorama import Fore
 import slpp
 
-# ------------------------------------------------------------
-# ✅ SUPER IMPORTANTE: asegurar que el directorio del script esté en sys.path
-# (evita ModuleNotFoundError: bridge_ui)
-# ------------------------------------------------------------
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
@@ -123,26 +116,35 @@ LOCAL_QUEUE_FILE = os.getenv("UPLOAD_QUEUE_FILE", "upload_queue.jsonl")
 UPLOADER_VERSION = "44.0"
 
 
-# =========================
-# UI fallback (si bridge_ui no existe o falla)
-# =========================
-class _NullUI:
+class ConsoleReporter:
+    """
+    Reporter ultra simple para modo headless: todo se loguea a consola con mucho detalle.
+    """
+
     def __init__(self):
         self.enabled = False
         self.root = None
 
-    def update_status(self, *args, **kwargs):
-        return
-
-    def show_activity(self, *args, **kwargs):
-        return
-
-    def push_log(self, msg: str, level: str = "INFO"):
-        # mínimo: mandar a logger para no perder info
+    def update_status(self, wow_running: Optional[bool], health: Dict[str, Any], wow_path: str, **kwargs):
         try:
-            logger.info(f"[UI:{level}] {msg}")
+            activity = kwargs.get("activity", "--")
+            progress = kwargs.get("progress", "--")
+            queue_note = kwargs.get("queue_note", "--")
+            logger.debug(
+                f"[STATUS] wow_running={wow_running} | activity={activity} | progress={progress} | queue={queue_note} "
+                f"| health(lat_ms={health.get('last_latency_ms')}, payload={health.get('last_payload_size')}, "
+                f"parse={health.get('last_parse_ok')}, upload={health.get('last_upload_ok')}) | path={wow_path}"
+            )
         except Exception:
             pass
+
+    def show_activity(self, message: str, progress: str = "--"):
+        logger.info(f"[ACTIVITY] {message} :: {progress}")
+
+    def push_log(self, msg: str, level: str = "INFO"):
+        level = (level or "info").lower()
+        log_fn = getattr(logger, level, logger.info)
+        log_fn(f"[TRACE] {msg}")
 
     def set_console_visible(self, visible: bool):
         return
@@ -288,12 +290,6 @@ class Config:
 
         self.enable_web_upload = os.getenv("ENABLE_WEB_UPLOAD", "true").lower() == "true"
         self.enable_stats_incremental_web = os.getenv("ENABLE_STATS_INCREMENTAL_WEB", "true").lower() == "true"
-        self.enable_ui = os.getenv("ENABLE_UI", "true").lower() == "true"
-
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        self.ui_icon_path = os.path.normpath(
-            os.getenv("GAT_ICON_PATH", os.path.join(base_dir, "gat_icon.png"))
-        )
 
         self.min_roster_size = int(os.getenv("MIN_ROSTER_SIZE", "1"))
 
@@ -494,6 +490,7 @@ class GuildActivityBridge:
         self._force_reason = "manual"
 
         self._console_toggle_available = self._init_console_window_state()
+        self._minimize_console_window()
 
         # UI eliminado: modo consola siempre.
         self.ui = _NullUI()
@@ -811,6 +808,21 @@ def start(self):
             self._console_hwnd = None
             self._console_visible = False
             return False
+
+    def _minimize_console_window(self):
+        """
+        Minimiza la ventana de la consola para dejarla en la barra de tareas (modo headless-friendly).
+        """
+        if os.name != "nt" or not self._console_hwnd:
+            return
+        try:
+            import ctypes
+            SW_MINIMIZE = 6
+            ctypes.windll.user32.ShowWindow(self._console_hwnd, SW_MINIMIZE)
+            self._console_visible = False
+            logger.info("Consola minimizada (ejecución en segundo plano con trazas verbosas).")
+        except Exception as e:
+            logger.debug(f"No se pudo minimizar la consola: {e}")
 
     def _set_console_visibility(self, visible: bool):
         if os.name != "nt" or not self._console_hwnd:
@@ -1347,6 +1359,10 @@ def start(self):
                     "Subiendo snapshots",
                     progress=f"Lote {int(i // batch_size) + 1}/{total_batches}",
                 )
+                logger.info(
+                    f"[STATS] Enviando lote {int(i // batch_size) + 1}/{total_batches} "
+                    f"({len(chunk)} snapshots, ts {chunk[0].get('ts')} -> {chunk[-1].get('ts')})"
+                )
                 self._post_to_web_with_retry(payload, purpose=f"stats {i//batch_size+1}/{total_batches}")
 
             self.state.last_uploaded_stats_ts = int(new_snaps[-1].get("ts", self.state.last_uploaded_stats_ts) or self.state.last_uploaded_stats_ts)
@@ -1523,6 +1539,10 @@ def start(self):
                     "Subiendo roster/chat",
                     progress=f"Lote {batch_index}/{total_batches} ({len(batch_keys)} miembros)",
                 )
+                logger.info(
+                    f"[ROSTER] Lote {batch_index}/{total_batches} | miembros_en_lote={len(batch_keys)} "
+                    f"| total_miembros={total_members} | modo={roster_mode} | razon={roster_reason}"
+                )
                 self._post_to_web_with_retry(payload, purpose=f"roster batch {batch_index}/{total_batches} ({len(batch_keys)})")
                 idx += batch_size
                 batch_index += 1
@@ -1562,6 +1582,10 @@ def start(self):
                 elapsed_ms = int((time.time() - start) * 1000)
                 self.health["last_latency_ms"] = elapsed_ms
                 self.health["last_payload_size"] = len(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
+                logger.debug(
+                    f"[HTTP] POST attempt {attempt} -> {url} | ms={elapsed_ms} | size={self.health['last_payload_size']} "
+                    f"| purpose={purpose}"
+                )
 
                 if resp.status_code == 200:
                     self.health["last_upload_ok"] = datetime.now().isoformat()
