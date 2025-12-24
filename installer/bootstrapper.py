@@ -364,7 +364,7 @@ def copy_bridge_from_repo(repo_root: Path, install_root: Path) -> None:
     install_root.mkdir(parents=True, exist_ok=True)
 
     # 🔥 Case-insensitive + validación dura
-    required = ["guild_activity_bridge.py", "bridge_ui.py", "requirements.txt"]
+    required = ["guild_activity_bridge.py", "requirements.txt"]
     copied = []
 
     for name in required:
@@ -375,12 +375,8 @@ def copy_bridge_from_repo(repo_root: Path, install_root: Path) -> None:
         copied.append(name)
         log(f"Copiado {name} <- {p}")
 
-    # Asegurar que bridge_ui.py exista (evita el ModuleNotFoundError)
-    if not (install_root / "bridge_ui.py").exists():
-        raise RuntimeError("bridge_ui.py NO quedó en la carpeta de instalación. Abortando para evitar crash.")
+    # (UI eliminada) No copiamos bridge_ui.py para mantener la instalación simple.
 
-    # ❌ NO copiar iniciar.bat (causa el error del Microsoft Store python)
-    # (Si quieres un botón de inicio, se hace vía shortcuts .cmd creados por el instalador)
 
     # opcional media/
     media = None
@@ -436,7 +432,10 @@ def write_env_file(install_root: Path, wow_addon_path_value: str) -> None:
         WEB_API_URL={WEB_API_URL}
         WEB_API_KEY={WEB_API_KEY}
         WOW_ADDON_PATH="{wow_addon_path_value}"
-        ENABLE_AUTOSTART_UI=true
+        ENABLE_UI=false
+        GAT_CONSOLE_LOG_LEVEL=INFO
+        GAT_FILE_LOG_LEVEL=DEBUG
+        GAT_LOG_DIR="logs"
         """
     ).strip() + "\n"
     env_path.write_text(content, encoding="utf-8")
@@ -444,35 +443,43 @@ def write_env_file(install_root: Path, wow_addon_path_value: str) -> None:
 
 
 def create_start_scripts(install_root: Path, python_exe: Path) -> None:
+    """Crea scripts para arrancar el bridge en modo consola (sin UI).
+
+    - start_bridge.bat: arranca el bridge en el mismo CMD.
+    - start_bridge_minimized.vbs: arranca el .bat en un CMD minimizado (taskbar).
+    """
     runner = install_root / "start_bridge.bat"
     runner.write_text(
-        textwrap.dedent(f"""
-        @echo off
-        setlocal
-        cd /d "{install_root}"
-
-        REM Si Tcl/Tk está presente, configura rutas para tkinter
-        set "PYDIR={python_exe.parent}"
-        if exist "%PYDIR%\tcl\tcl8.6" set "TCL_LIBRARY=%PYDIR%\tcl\tcl8.6"
-        if exist "%PYDIR%\tcl\tk8.6" set "TK_LIBRARY=%PYDIR%\tcl\tk8.6"
-
-        "{python_exe}" -u -B guild_activity_bridge.py
-        """).strip() + "\n",
+        textwrap.dedent(
+            f"""
+            @echo off
+            setlocal
+            cd /d "{install_root}"
+            "{python_exe}" -u "{install_root / 'guild_activity_bridge.py'}"
+            endlocal
+            """
+        ).strip() + "\n",
         encoding="utf-8",
     )
 
-    launcher = install_root / "start_bridge_hidden.vbs"
-    launcher.write_text(
-        'Set shell = CreateObject("WScript.Shell")\n'
-        f'shell.Run "cmd /c ""{str(runner)}""", 0, False\n',
+    vbs_min = install_root / "start_bridge_minimized.vbs"
+    vbs_min.write_text(
+        textwrap.dedent(
+            f"""
+            Set WshShell = CreateObject("WScript.Shell")
+            ' 7 = Minimized, stays in taskbar
+            WshShell.Run chr(34) & "{runner}" & chr(34), 7, False
+            """
+        ).strip() + "\n",
         encoding="utf-8",
     )
-    log("start_bridge.bat + start_bridge_hidden.vbs creados.")
+
+    log("start_bridge.bat + start_bridge_minimized.vbs creados.")
 
 
 def register_startup(install_root: Path) -> None:
     STARTUP_DIR.mkdir(parents=True, exist_ok=True)
-    src = install_root / "start_bridge_hidden.vbs"
+    src = install_root / "start_bridge_minimized.vbs"
     dst = STARTUP_DIR / STARTUP_VBS_NAME
     # Sobrescribir limpio si ya existía
     if dst.exists():
@@ -522,127 +529,105 @@ def cleanup_old_desktop_items(desktop: Path) -> None:
             pass
 
 
-def write_verify_script(install_root: Path, wow_addons_path: Path) -> Path:
+def write_verify_script(install_root: Path, addons_path_str: str) -> None:
     verify = install_root / "verify_install.bat"
-    addons_path_str = str(wow_addons_path)
+
+    root = str(install_root)
+    python_exe = str((install_root / "python-3.11.9" / "python.exe"))
+    vbs_startup = str(STARTUP_DIR / STARTUP_VBS_NAME)
 
     verify.write_text(
-        textwrap.dedent(rf"""
-        @echo off
-        setlocal enabledelayedexpansion
-        echo ==========================================
-        echo   GAT Bridge - Verificar Instalacion
-        echo ==========================================
-        echo.
-        set ROOT=%~dp0
-        echo Install root: %ROOT%
-        echo.
+        textwrap.dedent(
+            rf"""
+            @echo off
+            setlocal
+            title GAT Bridge - Verificar Instalacion
 
-        set OK=1
-        call :CHECK "guild_activity_bridge.py"
-        call :CHECK "bridge_ui.py"
-        call :CHECK "requirements.txt"
-        call :CHECK ".env"
-        call :CHECK "start_bridge.bat"
-        call :CHECK "start_bridge_hidden.vbs"
-        call :CHECK "installer_log.txt"
+            echo.
+            echo ==========================================
+            echo   GAT Bridge - Verificar Instalacion
+            echo ==========================================
+            echo.
+            echo Install root: {root}
+            echo.
 
-        echo.
-        if exist "%ROOT%python-{PYTHON_EMBED_VERSION}\python.exe" (
-          echo OK: Python portable: python-{PYTHON_EMBED_VERSION}\python.exe
-        ) else (
-          echo MISSING: Python portable (python.exe)
-          set OK=0
-        )
+            call :chk "{root}\guild_activity_bridge.py" "guild_activity_bridge.py"
+            call :chk "{root}\requirements.txt" "requirements.txt"
+            call :chk "{root}\.env" ".env"
+            call :chk "{root}\start_bridge.bat" "start_bridge.bat"
+            call :chk "{root}\start_bridge_minimized.vbs" "start_bridge_minimized.vbs"
+            call :chk "{root}\installer_log.txt" "installer_log.txt"
+            call :chk "{python_exe}" "Python portable: python.exe"
 
-echo.
-REM --- Tkinter checks (Tcl/Tk runtime) ---
-if exist "%ROOT%python-3.11.9\tcl\tcl8.6" (
-  echo OK: Tcl/Tk runtime presente (tcl\tcl8.6)
-) else (
-  echo WARN: Tcl/Tk NO presente (tkinter puede fallar)
-)
-if exist "%ROOT%python-3.11.9\tcl\tk8.6" (
-  echo OK: Tk runtime presente (tcl\tk8.6)
-) else (
-  echo WARN: Tk runtime NO presente (tkinter puede fallar)
-)
-if exist "%ROOT%python-3.11.9\DLLs\_tkinter.pyd" (
-  echo OK: _tkinter.pyd presente (DLLs\_tkinter.pyd)
-) else (
-  echo WARN: _tkinter.pyd NO presente
-)
-        echo.
-        set STARTUP=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\{STARTUP_VBS_NAME}
-        if exist "%STARTUP%" (
-          echo OK: Autostart presente: %STARTUP%
-        ) else (
-          echo WARN: No veo Autostart en Startup: %STARTUP%
-          set OK=0
-        )
+            echo.
+            if exist "{vbs_startup}" (
+              echo OK: Autostart presente: {vbs_startup}
+            ) else (
+              echo WARN: Autostart NO presente: {vbs_startup}
+            )
 
-        echo.
-        set ADDONS_PATH={addons_path_str}
-        if exist "%ADDONS_PATH%\GuildActivityTracker" (
-          echo OK: Addon instalado: %ADDONS_PATH%\GuildActivityTracker
-        ) else (
-          echo WARN: No veo el addon en: %ADDONS_PATH%\GuildActivityTracker
-          set OK=0
-        )
+            echo.
+            echo WoW AddOns path detectado:
+            echo   {addons_path_str}
+            echo.
 
-        echo.
-        if "!OK!"=="1" (
-          echo RESULTADO: OK - Instalacion parece correcta.
-        ) else (
-          echo RESULTADO: FAIL - Faltan cosas o algo no quedo bien.
-          echo Revisa el log: %ROOT%installer_log.txt
-        )
-        echo.
-        pause
-        exit /b
+            echo Test import basico (requests, watchdog, dotenv)...
+            "{python_exe}" -c "import requests, watchdog, dotenv; print('OK imports')"
+            if errorlevel 1 (
+              echo WARN: El test de imports fallo. Reinstala dependencias.
+            )
 
-        :CHECK
-        if exist "%ROOT%%~1" (
-          echo OK: %~1
-        ) else (
-          echo MISSING: %~1
-          set OK=0
-        )
-        exit /b
-        """).strip() + "\n",
+            echo.
+            echo Listo. Presiona una tecla para cerrar.
+            pause >nul
+            exit /b 0
+
+            :chk
+            if exist %1 (
+              echo OK: %2
+            ) else (
+              echo WARN: %2 NO encontrado
+            )
+            exit /b 0
+            """
+        ).strip() + "\n",
         encoding="utf-8",
     )
     log("verify_install.bat creado.")
-    return verify
 
 
 def create_desktop_cmds_only(install_root: Path) -> None:
     desktop = get_desktop_dir()
-    desktop.mkdir(parents=True, exist_ok=True)
+    if not desktop.exists():
+        log(f"WARNING: Desktop no existe: {desktop}")
+        return
 
-    cleanup_old_desktop_items(desktop)
+    vbs_min = install_root / "start_bridge_minimized.vbs"
+    verify = install_root / "verify_install.bat"
+    open_folder = install_root
+    open_log = LOG_FILE
 
-    start_bat = install_root / "start_bridge.bat"
-    verify_bat = install_root / "verify_install.bat"
-    log_path = install_root / "installer_log.txt"
+    cmds = [
+        ("GAT Bridge - Start (Minimized).cmd", f'@echo off\nwscript.exe "{vbs_min}"\n'),
+        ("GAT Bridge - Verify Install.cmd", f'@echo off\ncmd /k "{verify}"\n'),
+        ("GAT Bridge - Open Folder.cmd", f'@echo off\nexplorer.exe "{open_folder}"\n'),
+        ("GAT Bridge - Open Installer Log.cmd", f'@echo off\nnotepad.exe "{open_log}"\n'),
+    ]
 
-    # 4 iconos y ya. Sin .lnk para evitar duplicados visuales.
-    (desktop / "GAT Bridge - Start (Visible).cmd").write_text(
-        f'@echo off\r\ncmd /k ""{start_bat}""\r\n',
-        encoding="utf-8",
-    )
-    (desktop / "GAT Bridge - Verify Install.cmd").write_text(
-        f'@echo off\r\ncmd /k ""{verify_bat}""\r\n',
-        encoding="utf-8",
-    )
-    (desktop / "GAT Bridge - Open Folder.cmd").write_text(
-        f'@echo off\r\nexplorer.exe "{install_root}"\r\n',
-        encoding="utf-8",
-    )
-    (desktop / "GAT Bridge - Open Install Log.cmd").write_text(
-        f'@echo off\r\nnotepad.exe "{log_path}"\r\n',
-        encoding="utf-8",
-    )
+    created = []
+    for name, body in cmds:
+        path = desktop / name
+        path.write_text(body, encoding="utf-8")
+        created.append(path)
+
+    # Limpieza: eliminar duplicados por nombre (case-insensitive) más allá de estos 4
+    keep_names = set(n.lower() for n, _ in cmds)
+    for p in desktop.glob("GAT Bridge - *.cmd"):
+        if p.name.lower() not in keep_names:
+            try:
+                p.unlink()
+            except Exception:
+                pass
 
     log(f"Desktop (.cmd) creados y duplicados limpiados: {desktop}")
 
@@ -698,30 +683,28 @@ def main() -> None:
     try:
         step(1, "Preparar Python portable + pip")
         python_exe = ensure_portable_python(INSTALL_ROOT)
+        # UI eliminada: omitimos Tkinter/Tcl/Tk para mantener el instalador simple y robusto.
 
-        step(2, "Habilitar Tkinter (Tcl/Tk) en el Python portable")
-        ensure_tkinter_support(python_exe.parent, python_exe)
-
-        step(3, "Descargar repo del Bridge/Uploader")
+        step(2, "Descargar repo del Bridge/Uploader")
         with tempfile.TemporaryDirectory() as td:
             td_path = Path(td)
             uploader_root = download_and_extract_repo(UPLOADER_ZIP_URL, td_path)
             log(f"Uploader repo extraído: {uploader_root}")
 
-            step(4, "Copiar archivos del Bridge (sin iniciar.bat)")
+            step(3, "Copiar archivos del Bridge (sin iniciar.bat)")
             copy_bridge_from_repo(uploader_root, INSTALL_ROOT)
 
-        step(5, "Instalar dependencias del Bridge (pip)")
+        step(4, "Instalar dependencias del Bridge (pip)")
         pip_install(python_exe, INSTALL_ROOT / "requirements.txt")
 
-        step(6, "Detectar / escoger ruta AddOns de WoW")
+        step(5, "Detectar / escoger ruta AddOns de WoW")
         wow_addons_path = choose_wow_addons_path()
         log(f"WoW AddOns path elegido: {wow_addons_path}")
 
-        step(7, "Instalar Addon como GuildActivityTracker")
+        step(6, "Instalar Addon como GuildActivityTracker")
         install_addon_as_guildactivitytracker(wow_addons_path)
 
-        step(8, "Detectar SavedVariables y escribir .env")
+        step(7, "Detectar SavedVariables y escribir .env")
         savedvars = detect_savedvariables_from_addons_path(wow_addons_path)
         if savedvars:
             wow_addon_path_value = str(savedvars)
@@ -732,17 +715,17 @@ def main() -> None:
 
         write_env_file(INSTALL_ROOT, wow_addon_path_value)
 
-        step(9, "Crear scripts de arranque + verify + summary")
+        step(8, "Crear scripts de arranque + verify + summary")
         create_start_scripts(INSTALL_ROOT, python_exe)
         write_verify_script(INSTALL_ROOT, wow_addons_path)
         write_install_summary(INSTALL_ROOT, wow_addons_path, wow_addon_path_value)
 
-        step(10, "Registrar AutoStart + crear 4 accesos (.cmd) sin duplicados")
+        step(9, "Registrar AutoStart + crear 4 accesos (.cmd) sin duplicados")
         register_startup(INSTALL_ROOT)
         create_desktop_cmds_only(INSTALL_ROOT)
 
-        step(11, "Arrancar Bridge automáticamente (hidden)")
-        vbs = INSTALL_ROOT / "start_bridge_hidden.vbs"
+        step(10, "Arrancar Bridge automáticamente (minimized)")
+        vbs = INSTALL_ROOT / "start_bridge_minimized.vbs"
         subprocess.Popen(["wscript.exe", str(vbs)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         log("✅ Instalación COMPLETADA con éxito.")

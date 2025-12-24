@@ -48,20 +48,53 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
-# Import resiliente de BridgeUI (con fallback)
-try:
-    from bridge_ui import BridgeUI  # type: ignore
-except Exception as _ui_exc:
-    BridgeUI = None  # type: ignore
+# UI eliminado: este bridge corre en modo consola (sin Tk/Tray).
+BridgeUI = None  # type: ignore
 
 colorama.init(autoreset=True)
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
-logger = logging.getLogger(__name__)
+def _setup_logging() -> logging.Logger:
+    """Logging dual: consola (INFO) + archivo (DEBUG)."""
+    console_level = os.getenv("GAT_CONSOLE_LOG_LEVEL", "INFO").upper().strip()
+    file_level = os.getenv("GAT_FILE_LOG_LEVEL", "DEBUG").upper().strip()
+    log_dir = os.getenv("GAT_LOG_DIR", "logs").strip().strip('"')
+    try:
+        if not os.path.isabs(log_dir):
+            log_dir = os.path.join(SCRIPT_DIR, log_dir)
+        os.makedirs(log_dir, exist_ok=True)
+    except Exception:
+        # fallback: mismo directorio
+        log_dir = SCRIPT_DIR
+
+    log_path = os.path.join(log_dir, "guild_activity_bridge.log")
+
+    logger_obj = logging.getLogger("GATBridge")
+    logger_obj.setLevel(logging.DEBUG)
+
+    # Evitar duplicar handlers si el módulo se recarga
+    if logger_obj.handlers:
+        return logger_obj
+
+    fmt = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s", "%Y-%m-%d %H:%M:%S")
+
+    sh = logging.StreamHandler()
+    sh.setLevel(getattr(logging, console_level, logging.INFO))
+    sh.setFormatter(fmt)
+
+    try:
+        from logging.handlers import RotatingFileHandler
+        fh = RotatingFileHandler(log_path, maxBytes=2_000_000, backupCount=5, encoding="utf-8")
+        fh.setLevel(getattr(logging, file_level, logging.DEBUG))
+        fh.setFormatter(fmt)
+        logger_obj.addHandler(fh)
+    except Exception:
+        # Si falla el file handler, seguimos con consola
+        pass
+
+    logger_obj.addHandler(sh)
+    return logger_obj
+
+logger = _setup_logging()
 
 psutil_spec = importlib.util.find_spec("psutil")
 if psutil_spec:
@@ -87,7 +120,7 @@ DEFAULT_TZ = "America/New_York"
 
 STATE_FILENAME = os.getenv("BRIDGE_STATE_FILE", "gat_bridge_state.json")
 LOCAL_QUEUE_FILE = os.getenv("UPLOAD_QUEUE_FILE", "upload_queue.jsonl")
-UPLOADER_VERSION = "43.1"
+UPLOADER_VERSION = "44.0"
 
 
 # =========================
@@ -206,11 +239,13 @@ class LocalUploadQueue:
             return
         remaining: List[Dict[str, Any]] = []
         logger.info(f"{Fore.CYAN}Procesando cola local: {len(entries)} pendientes...")
-        for entry in entries:
+        for idx, entry in enumerate(entries, 1):
+            logger.info(f"[queue] Enviando {idx}/{len(entries)}: {entry.get('purpose','queued upload')}")
             payload = entry.get("payload", {})
             purpose = entry.get("purpose", "queued upload")
             try:
                 sender(payload, purpose=purpose, allow_queue=False)
+                logger.info(f"[queue] OK {idx}/{len(entries)}: {purpose}")
             except Exception as e:
                 logger.warning(f"No pude re-subir payload en cola ({purpose}): {e}")
                 remaining.append(entry)
@@ -460,27 +495,9 @@ class GuildActivityBridge:
 
         self._console_toggle_available = self._init_console_window_state()
 
-        # UI init (resiliente)
-        if BridgeUI is None:
-            self.ui = _NullUI()
-            self.ui.push_log("BridgeUI no disponible (import falló). Continuando sin UI.", level="warn")
-        else:
-            self.ui = BridgeUI(
-                self.config.enable_ui,
-                self.config.ui_icon_path,
-                on_full_roster=lambda: self.request_full_roster("manual-ui"),
-                on_exit=self.stop,
-                on_toggle_console=self.toggle_console_visibility if self._console_toggle_available else None,
-                on_toggle_autostart=self.toggle_autostart if self._autostart_supported else None,
-                autostart_available=self._autostart_supported,
-                autostart_enabled=self._autostart_enabled,
-                console_visible=self._console_visible,
-            )
-
-        # ✅ SOLO ocultar consola si realmente hay UI (ventana o tray)
-        if getattr(self.ui, "enabled", False) and getattr(self.ui, "root", None) is not None:
-            self._hide_console_window()
-
+        # UI eliminado: modo consola siempre.
+        self.ui = _NullUI()
+        # No ocultamos consola aquí: se inicia minimizada mediante start_bridge_minimized.vbs
 
     # =========================
     # Estado persistente local
@@ -529,25 +546,23 @@ class GuildActivityBridge:
     # =========================
     # Loop principal
     # =========================
-    def start(self):
-        logger.info(f"{Fore.GREEN}=== SISTEMA V{UPLOADER_VERSION} (THE RELAY TANK) ===")
-        logger.info(f"Vigilando: {self.config.wow_addon_path}")
-        self._check_latest_version()
-        self._start_command_listener()
+def start(self):
+    logger.info(f"{Fore.GREEN}=== SISTEMA V{UPLOADER_VERSION} (CONSOLE MODE) ===")
+    logger.info(f"Vigilando SavedVariables: {self.config.wow_addon_path}")
+    logger.info(f"Web endpoint: {self.config.web_url}")
+    logger.info(f"Roster mode: {self.config.roster_mode} | batch_size={self.config.roster_batch_size} | stats_batch_size={self.config.stats_batch_size}")
+    self._check_latest_version()
+    self._start_command_listener()
 
-        if self._autostart_supported:
-            status = "habilitado" if self._autostart_enabled else "deshabilitado"
-            logger.info(f"Inicio automático en Windows: {status} (configurable desde la UI)")
-        else:
-            logger.info("Inicio automático solo disponible en Windows (omitido).")
+    if self._autostart_supported:
+        status = "habilitado" if self._autostart_enabled else "deshabilitado"
+        logger.info(f"Inicio automático en Windows: {status}")
+    else:
+        logger.info("Inicio automático solo disponible en Windows (omitido).")
 
-        if getattr(self.ui, "enabled", False) and getattr(self.ui, "root", None) is not None:
-            worker = threading.Thread(target=self._run_loop, daemon=True)
-            worker.start()
-            self.ui.run()
-            self.stop()
-        else:
-            self._run_loop()
+    # UI eliminado: corremos siempre en modo consola.
+    self._run_loop()
+
 
     def _start_command_listener(self):
         if not sys.stdin.isatty():
@@ -1304,8 +1319,13 @@ class GuildActivityBridge:
             batch_size = max(10, self.config.stats_batch_size)
             total_batches = int(math.ceil(len(new_snaps) / batch_size))
 
+            logger.info(f"[web] Stats incremental: nuevos={len(new_snaps)} | batch_size={batch_size} | batches={total_batches}")
+
             for i in range(0, len(new_snaps), batch_size):
                 chunk = new_snaps[i:i + batch_size]
+                batch_no = (i // batch_size) + 1
+                done = min(i + len(chunk), len(new_snaps))
+                logger.info(f"[web] Stats batch {batch_no}/{total_batches} | snapshots {done}/{len(new_snaps)}")
                 for j in range(len(chunk) - 1):
                     chunk[j]["online"] = {}
 
@@ -1545,6 +1565,7 @@ class GuildActivityBridge:
 
                 if resp.status_code == 200:
                     self.health["last_upload_ok"] = datetime.now().isoformat()
+                    logger.info(f"[web] OK {purpose} (HTTP 200, {elapsed_ms} ms)")
                     return
 
                 if resp.status_code == 413:
@@ -1552,7 +1573,6 @@ class GuildActivityBridge:
 
                 if resp.status_code in (401, 403):
                     logger.error(f"{Fore.RED}Web auth error ({resp.status_code}) en {purpose}. Revisa WEB_API_KEY.")
-                    self.ui.push_log(f"Auth error {resp.status_code} en {purpose}", level="error")
                     raise RuntimeError(f"Web auth error {resp.status_code}")
 
                 if resp.status_code in (400, 422):
@@ -1561,11 +1581,9 @@ class GuildActivityBridge:
                     except Exception:
                         details = resp.text[:400]
                     logger.error(f"{Fore.RED}Web validation error {resp.status_code} en {purpose}: {details}")
-                    self.ui.push_log(f"Validación falló ({resp.status_code}) en {purpose}", level="error")
                     raise RuntimeError(f"Web validation error {resp.status_code}")
 
                 logger.warning(f"{Fore.YELLOW}Web error {resp.status_code} en {purpose}. Intento {attempt}. Backoff {backoff:.1f}s")
-                self.ui.push_log(f"Web error {resp.status_code} en {purpose}. Reintento {attempt}", level="warn")
 
                 if allow_queue and attempt >= max_attempts_before_queue:
                     self.local_queue.enqueue(payload, purpose)
