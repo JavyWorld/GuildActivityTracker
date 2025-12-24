@@ -1,0 +1,9 @@
+2025-12-23 19:57:18 - INFO - [32mDetectado GuildActivityTracker.lua en: C:\Program Files (x86)\World of Warcraft\_retail_\WTF\Account\364416775#1\SavedVariables\GuildActivityTracker.lua
+2025-12-23 19:57:18 - ERROR - Fallo inicio: 'GuildActivityBridge' object has no attribute '_detect_autostart_enabled'
+Traceback (most recent call last):
+  File "C:\Javier\Proyectos\GitHub\GAT - Guild Activity Tracker\GuildActivityTracker\GuildActivityTracker\guild_activity_bridge.py", line 1618, in main
+    bridge = GuildActivityBridge(Config())
+  File "C:\Javier\Proyectos\GitHub\GAT - Guild Activity Tracker\GuildActivityTracker\GuildActivityTracker\guild_activity_bridge.py", line 483, in __init__
+    self._autostart_enabled = self._detect_autostart_enabled()
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'GuildActivityBridge' object has no attribute '_detect_autostart_enabled'
