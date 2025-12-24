@@ -490,8 +490,11 @@ class GuildActivityBridge:
         self._force_full_roster = threading.Event()
         self._force_reason = "manual"
 
-        self._console_toggle_available = self._init_console_window_state()
-        self._minimize_console_window()
+        console_state_init = getattr(self, "_init_console_window_state", None)
+        self._console_toggle_available = console_state_init() if callable(console_state_init) else False
+        minimize_console = getattr(self, "_minimize_console_window", None)
+        if callable(minimize_console):
+            minimize_console()
 
         # UI eliminado: modo consola siempre.
         self.ui = _NullUI()
