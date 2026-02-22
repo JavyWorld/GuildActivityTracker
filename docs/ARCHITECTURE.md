@@ -16,23 +16,24 @@ Responsabilidades:
 
 Clases clave:
 
-- `Config`: variables de `user_paths.py` + entorno, defaults y normalización de URL web.
+- `Config`: variables `.env`, defaults y normalización de URL web.
 - `BridgeState`: `last_uploaded_stats_ts`, `last_web_session_id`, `roster_snapshot`.
 - `LocalUploadQueue`: cola local persistente en JSONL ante fallos de red/API.
 - `GuildActivityBridge`: orquestador completo.
 
-### 2) `user_paths.py` (configuración editable)
+### 2) `installer/bootstrapper.py` (instalación)
 
 Responsabilidades:
 
-- centralizar paths y claves editables por usuario,
-- permitir uso portable sin tocar el core,
-- mantener overrides por variables de entorno cuando aplique.
+- descarga Python portable,
+- instala dependencias (`requirements.txt`),
+- configura `.env`,
+- integra/descarga addon,
+- configura autostart Windows.
 
-### 3) `bridge_ui.py`
- (legacy / no crítico)
+### 3) `bridge_ui.py` (legacy / no crítico)
 
-Ahora actúa como wrapper estable para una UI moderna basada en Tkinter puro (sin dependencias externas), apoyada por módulos en `ui/`.
+Existe como wrapper UI/tray histórico, pero el bridge actual está declarado en modo consola/headless dentro del núcleo (`BridgeUI = None`).
 
 ## Dependencias relevantes
 

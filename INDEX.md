@@ -12,13 +12,12 @@ Este índice está pensado para que **IAs y humanos** puedan entender el sistema
 6. [`docs/STATE_AND_RESILIENCE.md`](docs/STATE_AND_RESILIENCE.md) — estado persistente, cola local y recuperación de errores.
 7. [`docs/OPERATIONS.md`](docs/OPERATIONS.md) — operación diaria, configuración y troubleshooting.
 8. [`docs/GLOSSARY.md`](docs/GLOSSARY.md) — glosario de términos del sistema.
-9. [`docs/PORTABLE_SETUP.md`](docs/PORTABLE_SETUP.md) — guía portable sin instalador.
 
 ## Mapa rápido de archivos clave en código
 
 - `guild_activity_bridge.py` — proceso principal (headless), parseo Lua, normalización, chunking y subida web.
-- `user_paths.py` — archivo portable para editar rutas/keys sin tocar el core.
-- `bridge_ui.py` + `ui/` — interfaz visual moderna basada en Tkinter (sin librerías externas).
+- `installer/bootstrapper.py` — instalador Windows para Python portable + bridge + addon.
+- `bridge_ui.py` — wrapper UI/tray heredado (el bridge actual corre en modo consola).
 - `gat_bridge_state.json` — estado persistente incremental (se genera/actualiza en runtime).
 - `logs/guild_activity_bridge.log` — log principal.
 
