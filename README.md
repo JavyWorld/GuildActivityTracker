@@ -9,6 +9,11 @@ Este script en Python monitorea en tiempo real el archivo `SavedVariables` de tu
 
 ---
 
+
+## 📚 Documentación ampliada
+
+Para una guía completa (IA + humano) revisa el índice: [`INDEX.md`](INDEX.md).
+
 ## 🚀 Características Principales
 
 * **Monitoreo en Tiempo Real:** Detecta cambios en el archivo `.lua` automáticamente (al hacer `/reload` o desconectarse).
