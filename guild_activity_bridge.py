@@ -37,12 +37,19 @@ import colorama
 from colorama import Fore
 import slpp
 
+try:
+    import user_paths as user_cfg
+except Exception:
+    user_cfg = None
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
-# UI eliminado: este bridge corre en modo consola (sin Tk/Tray).
-BridgeUI = None  # type: ignore
+try:
+    from bridge_ui import BridgeUI
+except Exception:
+    BridgeUI = None  # type: ignore
 
 colorama.init(autoreset=True)
 
@@ -157,8 +164,7 @@ class ConsoleReporter:
 
 
 
-# Null UI placeholder (headless mode)
-_NullUI = ConsoleReporter  # alias for headless mode / no-UI fallback
+_NullUI = ConsoleReporter
 @dataclass
 class BridgeState:
     last_uploaded_stats_ts: int = 0
@@ -270,12 +276,13 @@ class Config:
     def __init__(self):
         load_dotenv()
 
-        raw_path = os.getenv('WOW_ADDON_PATH', '').strip()
+        file_wow_path = str(getattr(user_cfg, 'WOW_ADDON_PATH', '') or '').strip() if user_cfg else ''
+        raw_path = os.getenv('WOW_ADDON_PATH', file_wow_path).strip()
         self.wow_addon_path = os.path.normpath(os.path.expandvars(raw_path)) if raw_path else ""
 
         self.default_realm = os.getenv("GUILD_REALM", os.getenv("DEFAULT_REALM", "")).replace(" ", "")
 
-        self.poll_interval = int(os.getenv("POLL_INTERVAL", "5"))
+        self.poll_interval = int(os.getenv("POLL_INTERVAL", str(getattr(user_cfg, "POLL_INTERVAL", 5) if user_cfg else 5)))
         self.wow_process_names = [
             n.strip() for n in os.getenv(
                 "WOW_PROCESS_NAMES", "Wow.exe,Wow-64.exe,WowT.exe,WowClassic.exe"
@@ -283,15 +290,18 @@ class Config:
             if n.strip()
         ]
 
-        raw_web_url = (os.getenv("WEB_API_URL", DEFAULT_WEB_API_URL) or "").strip()
+        file_web_url = str(getattr(user_cfg, "WEB_API_URL", DEFAULT_WEB_API_URL) or DEFAULT_WEB_API_URL) if user_cfg else DEFAULT_WEB_API_URL
+        raw_web_url = (os.getenv("WEB_API_URL", file_web_url) or "").strip()
         self.web_api_url = self._normalize_web_api_url(raw_web_url)
 
-        self.web_api_key = os.getenv("WEB_API_KEY", DEFAULT_WEB_API_KEY)
-        self.http_timeout = int(os.getenv("HTTP_TIMEOUT", str(DEFAULT_HTTP_TIMEOUT)))
-        self.batch_size = int(os.getenv("BATCH_SIZE", str(DEFAULT_BATCH_SIZE)))
-        self.stats_batch_size = int(os.getenv("STATS_BATCH_SIZE", str(DEFAULT_STATS_BATCH_SIZE)))
+        file_api_key = str(getattr(user_cfg, "WEB_API_KEY", "") or "") if user_cfg else ""
+        self.web_api_key = os.getenv("WEB_API_KEY", file_api_key or DEFAULT_WEB_API_KEY)
+        self.http_timeout = int(os.getenv("HTTP_TIMEOUT", str(getattr(user_cfg, "HTTP_TIMEOUT", DEFAULT_HTTP_TIMEOUT) if user_cfg else DEFAULT_HTTP_TIMEOUT)))
+        self.batch_size = int(os.getenv("BATCH_SIZE", str(getattr(user_cfg, "BATCH_SIZE", DEFAULT_BATCH_SIZE) if user_cfg else DEFAULT_BATCH_SIZE)))
+        self.stats_batch_size = int(os.getenv("STATS_BATCH_SIZE", str(getattr(user_cfg, "STATS_BATCH_SIZE", DEFAULT_STATS_BATCH_SIZE) if user_cfg else DEFAULT_STATS_BATCH_SIZE)))
 
-        self.enable_web_upload = os.getenv("ENABLE_WEB_UPLOAD", "true").lower() == "true"
+        default_enable_upload = str(getattr(user_cfg, "ENABLE_WEB_UPLOAD", True)).lower() if user_cfg else "true"
+        self.enable_web_upload = os.getenv("ENABLE_WEB_UPLOAD", default_enable_upload).lower() == "true"
         self.enable_stats_incremental_web = os.getenv("ENABLE_STATS_INCREMENTAL_WEB", "true").lower() == "true"
 
         self.min_roster_size = int(os.getenv("MIN_ROSTER_SIZE", "1"))
@@ -504,9 +514,29 @@ class GuildActivityBridge:
         if callable(minimize_console):
             minimize_console()
 
-        # UI eliminado: modo consola siempre.
-        self.ui = _NullUI()
-        # No ocultamos consola aquí: se inicia minimizada mediante start_bridge_minimized.vbs
+        self.ui = self._build_ui()
+
+    def _build_ui(self):
+        if BridgeUI is None:
+            return _NullUI()
+        try:
+            enabled = os.getenv("ENABLE_UI", "true").lower() == "true"
+            ui = BridgeUI(
+                enabled=enabled,
+                icon_path=os.path.join(SCRIPT_DIR, "media", "gat_logo.png"),
+                on_full_roster=lambda: self.request_full_roster("ui"),
+                on_exit=self.stop,
+                on_toggle_console=self.toggle_console_visibility,
+                on_toggle_autostart=self.toggle_autostart,
+                autostart_available=self._autostart_supported,
+                autostart_enabled=self._autostart_enabled,
+                console_visible=self._console_visible,
+            )
+            ui.run()
+            return ui
+        except Exception as e:
+            logger.warning(f"UI no disponible, continuando en headless: {e}")
+            return _NullUI()
 
     # =========================
     # Estado persistente local
@@ -569,7 +599,6 @@ class GuildActivityBridge:
         else:
             logger.info("Inicio automático solo disponible en Windows (omitido).")
 
-        # UI eliminado: corremos siempre en modo consola.
         self._run_loop()
 
 
